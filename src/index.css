@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+@theme {
+  --background-image-hero-1: url("/assets/hero-1.jpg");
+  --background-image-hero-2: "../assets/hero-2.webp";
+  --background-image-hero-3: "../assets/hero-3.webp";
+  --background-image-hero-4: "../assets/hero-4.webp";
+  --background-image-hero-5: "../assets/hero-5.jpg";
+  --background-image-hero-6: "../assets/hero-6.webp";
+}

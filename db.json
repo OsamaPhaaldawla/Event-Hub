@@ -1,0 +1,80 @@
+{
+  "events": [
+    {
+      "id": 1,
+      "title": "Elegant Corporate Event",
+      "subtitle": "Professional networking, business insights & luxury vibes.",
+      "date": "2025-05-10",
+      "location": "Khartoum Conference Hall",
+      "image": "/public/events/event-1.jpg",
+      "type": "corporate",
+      "description": "Join top industry professionals for an evening of networking, keynote speeches, and luxurious ambiance designed to spark connections and business growth.",
+      "accessType": "paid",
+      "seats": 200,
+      "price": 100,
+      "bookedSeats": 200
+    },
+    {
+      "id": 2,
+      "title": "Startup Pitch Night",
+      "subtitle": "Innovative ideas, tech demos & future unicorns.",
+      "date": "2025-06-20",
+      "location": "Sudan Tech Park",
+      "image": "/public/events/event-2.jpg",
+      "type": "startup",
+      "description": "Watch rising startups pitch their groundbreaking ideas to investors and tech enthusiasts in an inspiring atmosphere of innovation and opportunity.",
+      "accessType": "free-limited",
+      "seats": 150,
+      "bookedSeats": 90
+    },
+    {
+      "id": 3,
+      "title": "Art & Music Festival",
+      "subtitle": "Live music, art exhibitions, food trucks & unforgettable vibes.",
+      "date": "2025-07-15",
+      "location": "Khartoum Open Arena",
+      "image": "/public/events/event-3.jpg",
+      "type": "festival",
+      "description": "Celebrate creativity with a vibrant blend of live music performances, art showcases, and delicious food—all in a lively open-air venue.",
+      "accessType": "open"
+    },
+    {
+      "id": 4,
+      "title": "Art & Music Festival",
+      "subtitle": "Live music, art exhibitions, food trucks & unforgettable vibes.",
+      "date": "2025-07-15",
+      "location": "Khartoum Open Arena",
+      "image": "/public/events/event-3.jpg",
+      "type": "festival",
+      "description": "Celebrate creativity with a vibrant blend of live music performances, art showcases, and delicious food—all in a lively open-air venue.",
+      "accessType": "free-limited",
+      "seats": 120,
+      "bookedSeats": 70
+    },
+    {
+      "id": 5,
+      "title": "Elegant Corporate Event",
+      "subtitle": "Professional networking, business insights & luxury vibes.",
+      "date": "2025-05-10",
+      "location": "Khartoum Conference Hall",
+      "image": "/public/events/event-1.jpg",
+      "type": "corporate",
+      "description": "Join top industry professionals for an evening of networking, keynote speeches, and luxurious ambiance designed to spark connections and business growth.",
+      "accessType": "paid",
+      "seats": 180,
+      "price": 80,
+      "bookedSeats": 125
+    },
+    {
+      "id": 6,
+      "title": "Startup Pitch Night",
+      "subtitle": "Innovative ideas, tech demos & future unicorns.",
+      "date": "2025-06-20",
+      "location": "Sudan Tech Park",
+      "image": "/public/events/event-2.jpg",
+      "type": "startup",
+      "description": "Watch rising startups pitch their groundbreaking ideas to investors and tech enthusiasts in an inspiring atmosphere of innovation and opportunity.",
+      "accessType": "open"
+    }
+  ]
+}
