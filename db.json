@@ -1,0 +1,323 @@
+{
+  "events": [
+    {
+      "id": "1",
+      "title": "Elegant Corporate Event",
+      "date": "2025-05-10",
+      "location": "Khartoum Conference Hall",
+      "image": "/public/events/event-1.jpg",
+      "type": "corporate",
+      "description": "Join top industry professionals for an evening of networking, keynote speeches, and luxurious ambiance designed to spark connections and business growth.",
+      "accessType": "paid",
+      "seats": 200,
+      "price": 100,
+      "bookedSeats": 200
+    },
+    {
+      "id": "2",
+      "title": "Startup Pitch Night",
+      "subtitle": "Innovative ideas, tech demos & future unicorns.",
+      "date": "2025-06-20",
+      "location": "Sudan Tech Park",
+      "image": "/public/events/event-2.jpg",
+      "type": "startup",
+      "description": "Watch rising startups pitch their groundbreaking ideas to investors and tech enthusiasts in an inspiring atmosphere of innovation and opportunity.",
+      "accessType": "free-limited",
+      "seats": 150,
+      "bookedSeats": 90
+    },
+    {
+      "id": "3",
+      "title": "Art & Music Festival",
+      "subtitle": "Live music, art exhibitions, food trucks & unforgettable vibes.",
+      "date": "2025-07-15",
+      "location": "Khartoum Open Arena",
+      "image": "/public/events/event-3.jpg",
+      "type": "festival",
+      "description": "Celebrate creativity with a vibrant blend of live music performances, art showcases, and delicious food—all in a lively open-air venue.",
+      "accessType": "open"
+    },
+    {
+      "id": "4",
+      "title": "Art & Music Festival",
+      "subtitle": "Live music, art exhibitions, food trucks & unforgettable vibes.",
+      "date": "2025-07-15",
+      "location": "Khartoum Open Arena",
+      "image": "/public/events/event-3.jpg",
+      "type": "festival",
+      "description": "Celebrate creativity with a vibrant blend of live music performances, art showcases, and delicious food—all in a lively open-air venue.",
+      "accessType": "free-limited",
+      "seats": 120,
+      "bookedSeats": 70
+    },
+    {
+      "id": "5",
+      "title": "Elegant Corporate Event",
+      "subtitle": "Professional networking, business insights & luxury vibes.",
+      "date": "2025-05-10",
+      "location": "Khartoum Conference Hall",
+      "image": "/public/events/event-1.jpg",
+      "type": "corporate",
+      "description": "Join top industry professionals for an evening of networking, keynote speeches, and luxurious ambiance designed to spark connections and business growth.",
+      "accessType": "paid",
+      "seats": 180,
+      "price": 80,
+      "bookedSeats": 125
+    },
+    {
+      "id": "6",
+      "title": "Startup Pitch Night",
+      "subtitle": "Innovative ideas, tech demos & future unicorns.",
+      "date": "2025-06-20",
+      "location": "Sudan Tech Park",
+      "image": "/public/events/event-2.jpg",
+      "type": "startup",
+      "description": "Watch rising startups pitch their groundbreaking ideas to investors and tech enthusiasts in an inspiring atmosphere of innovation and opportunity.",
+      "accessType": "open"
+    },
+    {
+      "id": "64b3",
+      "title": "Startup Pitch Night",
+      "subtitle": "Innovative ideas, tech demos & future unicorns.",
+      "type": "Startup Pitch Night",
+      "accessType": "open",
+      "image": "/public/events/event-2.jpg",
+      "description": "Watch rising startups pitch their groundbreaking ideas to investors and tech enthusiasts in an inspiring atmosphere of innovation and opportunity",
+      "venueName": "Tara Hall",
+      "location": "JH78+V38، الخرطوم، السودان",
+      "url": "https://g.co/kgs/HJt1Gwv",
+      "date": "2025-04-10",
+      "time": "14:00"
+    },
+    {
+      "id": "8078",
+      "title": "test",
+      "subtitle": "subtitle",
+      "type": "Book Fair & Literature Event",
+      "accessType": "open",
+      "image": "blob:http://localhost:5173/de68cd77-5127-4890-9a72-10da581cc454",
+      "description": "locationlocationlocationlocationlocationlocation",
+      "venueName": "Friendship Hall",
+      "location": "JG46+6WC، شارع النيل، الخرطوم، السودان",
+      "url": "https://g.co/kgs/XNH3A1f",
+      "date": "2025-04-10",
+      "time": "10:00"
+    },
+    {
+      "id": "9262",
+      "title": "test",
+      "subtitle": null,
+      "type": "Music Festival",
+      "accessType": "open",
+      "image": null,
+      "description": "locationlocationlocationlocationlocation",
+      "venueName": "Tara Hall",
+      "location": "JH78+V38، الخرطوم، السودان",
+      "url": "https://g.co/kgs/HJt1Gwv",
+      "date": "2025-04-10",
+      "time": "10:00"
+    },
+    {
+      "title": "testing put",
+      "subtitle": null,
+      "type": "Music Festival",
+      "accessType": "open",
+      "image": null,
+      "description": "locationlocationlocationlocationlocationlocation",
+      "venueName": "Tara Hall",
+      "location": "JH78+V38، الخرطوم، السودان",
+      "url": "https://g.co/kgs/HJt1Gwv",
+      "date": "2025-04-10",
+      "time": "10:00",
+      "hosterName": "Osama",
+      "hosterEmail": "ash@labelc",
+      "hosterPassword": "location",
+      "hosterDescription": "",
+      "id": "cba9"
+    },
+    {
+      "title": "title updated",
+      "subtitle": null,
+      "type": "Food Festival",
+      "accessType": "paid",
+      "seats": "45",
+      "price": "22",
+      "image": null,
+      "description": "just some description",
+      "venueName": "Friendship Hall",
+      "location": "JG46+6WC، شارع النيل، الخرطوم، السودان",
+      "url": "https://g.co/kgs/XNH3A1f",
+      "date": "2025-04-10",
+      "time": "10:00",
+      "hosterName": "Osama",
+      "hosterEmail": "ash@labelc",
+      "hosterPassword": "12345678",
+      "hosterDescription": "",
+      "id": "af95"
+    },
+    {
+      "id": "19b2",
+      "title": "test",
+      "subtitle": null,
+      "type": "Carnival & Fair",
+      "accessType": "open",
+      "image": {},
+      "description": "scvs",
+      "venueName": "Friendship Hall",
+      "location": "JG46+6WC، شارع النيل، الخرطوم، السودان",
+      "url": "https://g.co/kgs/XNH3A1f",
+      "date": "2025-04-10",
+      "time": "10:00",
+      "hosterName": "Osama",
+      "hosterEmail": "ash@labelc",
+      "hosterPassword": "sdfwef",
+      "hosterDescription": ""
+    },
+    {
+      "id": "a35d",
+      "title": "etst4et",
+      "subtitle": "",
+      "type": "Party & Celebration",
+      "accessType": "free-limited",
+      "seats": "342",
+      "image": "event-3.jpg",
+      "description": "sdfsdfsdf",
+      "venueName": "Friendship Hall",
+      "date": "2025-04-10",
+      "time": "10:00",
+      "hosterName": "sdfsdf",
+      "hosterEmail": "sdfsdf@sdfs.sd",
+      "hosterPassword": "sdfsdf",
+      "hosterDescription": "sdfsdf"
+    },
+    {
+      "title": "updated",
+      "subtitle": "",
+      "type": "Networking Event",
+      "accessType": "open",
+      "image": {},
+      "description": "sfefsef",
+      "venueName": "Friendship Hall",
+      "date": "2025-04-10",
+      "time": "10:00",
+      "hosterName": "sfefs",
+      "hosterEmail": "ash@labelc",
+      "hosterPassword": "sfefs",
+      "hosterDescription": "",
+      "id": "4c9e"
+    },
+    {
+      "title": "updated again",
+      "subtitle": "",
+      "type": "Wedding & Engagement",
+      "accessType": "open",
+      "image": "[object File]",
+      "description": "fsfe",
+      "venueName": "Friendship Hall",
+      "date": "2025-04-11",
+      "time": "16:00",
+      "hosterName": "Osama",
+      "hosterEmail": "ash@labelc",
+      "hosterPassword": "sfef",
+      "hosterDescription": "",
+      "id": "8702"
+    }
+  ],
+  "venues": [
+    {
+      "id": "1",
+      "name": "Friendship Hall",
+      "location": "JG46+6WC، شارع النيل، الخرطوم، السودان",
+      "url": "https://g.co/kgs/XNH3A1f",
+      "capacity": 2000,
+      "availableSlots": [
+        {
+          "date": "2025-04-10",
+          "times": [
+            "10:00",
+            "14:00",
+            "18:00"
+          ]
+        },
+        {
+          "date": "2025-04-11",
+          "times": [
+            "12:00",
+            "16:00"
+          ]
+        }
+      ],
+      "description": "قاعة الصداقة هي مجمع لمباني بالخرطوم عاصمة السودان يتكون من قاعات للمؤتمرات والاجتماعات وصالات معارض و مسرحاً وسينما مغلقة ومرافق أخرى ملحقة بها",
+      "price": 300,
+      "images": [
+        "/public/Venues/friendship-hall.jpg",
+        "/public/Venues/friendship-hall2.jpg",
+        "/public/Venues/friendship-hall3.jpg",
+        "/public/Venues/friendship-hall4.jpg"
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Tara Hall",
+      "location": "JH78+V38، الخرطوم، السودان",
+      "url": "https://g.co/kgs/HJt1Gwv",
+      "capacity": 1000,
+      "availableSlots": [
+        {
+          "date": "2025-04-10",
+          "times": [
+            "10:00",
+            "14:00",
+            "18:00"
+          ]
+        },
+        {
+          "date": "2025-04-11",
+          "times": [
+            "12:00",
+            "16:00"
+          ]
+        }
+      ],
+      "description": "Tara Hall for Events and Conferences",
+      "price": 200,
+      "images": [
+        "/public/Venues/dream-Hall.jpg",
+        "/public/Venues/dream-Hall2.jpg",
+        "/public/Venues/dream-Hall3.jpg",
+        "/public/Venues/dream-Hall4.jpg"
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Khartoum Istadium",
+      "location": "HGX8+969، الخرطوم، السودان",
+      "url": "https://g.co/kgs/PKdAPoQ",
+      "capacity": 23000,
+      "availableSlots": [
+        {
+          "date": "2025-04-10",
+          "times": [
+            "10:00",
+            "14:00",
+            "18:00"
+          ]
+        },
+        {
+          "date": "2025-04-11",
+          "times": [
+            "12:00",
+            "16:00"
+          ]
+        }
+      ],
+      "description": "ملعب متعدد الاستخدامات",
+      "price": 2000,
+      "images": [
+        "/public/Venues/Istaad-Alkhartoum.jpg",
+        "/public/Venues/Istaad-Alkhartoum2.jpg",
+        "/public/Venues/Istaad-Alkhartoum3.jpg"
+      ]
+    }
+  ]
+}
