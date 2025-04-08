@@ -233,18 +233,11 @@
       "availableSlots": [
         {
           "date": "2025-04-10",
-          "times": [
-            "10:00",
-            "14:00",
-            "18:00"
-          ]
+          "times": ["10:00", "14:00", "18:00"]
         },
         {
           "date": "2025-04-11",
-          "times": [
-            "12:00",
-            "16:00"
-          ]
+          "times": ["12:00", "16:00"]
         }
       ],
       "description": "قاعة الصداقة هي مجمع لمباني بالخرطوم عاصمة السودان يتكون من قاعات للمؤتمرات والاجتماعات وصالات معارض و مسرحاً وسينما مغلقة ومرافق أخرى ملحقة بها",
@@ -265,18 +258,11 @@
       "availableSlots": [
         {
           "date": "2025-04-10",
-          "times": [
-            "10:00",
-            "14:00",
-            "18:00"
-          ]
+          "times": ["10:00", "14:00", "18:00"]
         },
         {
           "date": "2025-04-11",
-          "times": [
-            "12:00",
-            "16:00"
-          ]
+          "times": ["12:00", "16:00"]
         }
       ],
       "description": "Tara Hall for Events and Conferences",
@@ -297,18 +283,11 @@
       "availableSlots": [
         {
           "date": "2025-04-10",
-          "times": [
-            "10:00",
-            "14:00",
-            "18:00"
-          ]
+          "times": ["10:00", "14:00", "18:00"]
         },
         {
           "date": "2025-04-11",
-          "times": [
-            "12:00",
-            "16:00"
-          ]
+          "times": ["12:00", "16:00"]
         }
       ],
       "description": "ملعب متعدد الاستخدامات",
@@ -317,128 +296,6 @@
         "/public/Venues/Istaad-Alkhartoum.jpg",
         "/public/Venues/Istaad-Alkhartoum2.jpg",
         "/public/Venues/Istaad-Alkhartoum3.jpg"
-      ]
-    },
-    {
-      "id": "4a9c",
-      "name": "Mohammed",
-      "location": "url/justanyplace",
-      "url": "",
-      "capacity": "2222222",
-      "price": "222222222",
-      "description": "2222222222222",
-      "images": {},
-      "availableSlots": "[object Object],[object Object]"
-    },
-    {
-      "id": "71a5",
-      "name": "Osama",
-      "location": "some loacation",
-      "url": "",
-      "capacity": "3525",
-      "price": "235235",
-      "description": "sdvsve",
-      "images": {},
-      "availableSlots": "[{\"date\":\"2025-05-01\",\"times\":[\"15:23\",\"15:22\"]},{\"date\":\"2025-04-10\",\"times\":[\"15:26\"]}]"
-    },
-    {
-      "id": "6a50",
-      "name": "Mohammed",
-      "location": "some loacation",
-      "url": "",
-      "capacity": "32443",
-      "price": "344",
-      "description": "23423423",
-      "images": {},
-      "availableSlots": [
-        {
-          "date": "2025-04-14",
-          "times": [
-            "22:22",
-            "21:26",
-            "21:25"
-          ]
-        },
-        {
-          "date": "2025-04-18",
-          "times": [
-            "14:34",
-            "14:34",
-            "14:34"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "ae5d",
-      "name": "Mohammed",
-      "location": "url/justanyplace",
-      "url": "",
-      "capacity": "2333333",
-      "price": "2333333",
-      "description": "sdfsefefsefe",
-      "images": {},
-      "availableSlots": [
-        {
-          "date": "2025-04-15",
-          "times": [
-            "19:27",
-            "19:27"
-          ]
-        },
-        {
-          "date": "2025-04-14",
-          "times": [
-            "15:28",
-            "15:29"
-          ]
-        }
-      ]
-    },
-    {
-      "id": "4787",
-      "name": "Osama",
-      "location": "some loacation",
-      "url": "",
-      "capacity": "-28768",
-      "price": "765",
-      "description": "kuyjgh",
-      "images": [
-        {},
-        {},
-        {}
-      ],
-      "availableSlots": []
-    },
-    {
-      "id": "776e",
-      "name": "Mohammed",
-      "location": "url/justanyplace",
-      "url": "",
-      "capacity": "32352",
-      "price": "34342",
-      "description": "sfefsf",
-      "images": [
-        {},
-        {},
-        {}
-      ],
-      "availableSlots": [
-        {
-          "date": "2025-04-25",
-          "times": [
-            "20:49",
-            "19:49",
-            "15:54"
-          ]
-        },
-        {
-          "date": "2025-04-24",
-          "times": [
-            "20:49",
-            "15:55"
-          ]
-        }
       ]
     }
   ]

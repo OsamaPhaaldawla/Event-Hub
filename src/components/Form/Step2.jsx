@@ -14,7 +14,6 @@ export default function Step2({ next, prev, oldData }) {
   const [selectedVenue, setSelectedVenue] = useState(
     oldData ? venues.find((venue) => venue.name === oldData.venueName) : {}
   );
-  console.log(selectedVenue);
 
   const [errors, setErrors] = useState({});
   const [time, setTime] = useState(

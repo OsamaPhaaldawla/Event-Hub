@@ -85,5 +85,5 @@ export const action = async ({ request, params }) => {
     }
   );
 
-  //   return redirect("/venues");
+  return redirect("/venues");
 };

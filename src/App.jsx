@@ -10,9 +10,10 @@ import { loader as eventDetailsLoader } from "./routes/EventDetails";
 import EventDetails from "./routes/EventDetails";
 import Error from "./routes/Error";
 import Host, { action as hostAction, editDataLoader } from "./routes/Host";
-import { loader as hostLoader } from "./components/Form/Step2";
+import { loader as venuesLoader } from "./components/Form/Step2";
 import { AuthProvider } from "./context";
 import CreateVenue, { action as createVenueAction } from "./routes/CreateVenue";
+import Venues from "./routes/Venues";
 
 const router = createBrowserRouter([
   {
@@ -38,7 +39,7 @@ const router = createBrowserRouter([
       {
         path: "/host",
         element: <Host key="host-event" />,
-        loader: hostLoader,
+        loader: venuesLoader,
         action: hostAction,
       },
       {
@@ -56,10 +57,11 @@ const router = createBrowserRouter([
         path: "/admin",
         element: <Login header="Admin Login" key="admin-login" />,
       },
-      // {
-      //   path: "/venues",
-      //   element: <Venues />,
-      // },
+      {
+        path: "/venues",
+        element: <Venues />,
+        loader: venuesLoader,
+      },
       {
         path: "/venues/new",
         element: <CreateVenue />,
