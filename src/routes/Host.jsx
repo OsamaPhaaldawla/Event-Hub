@@ -70,7 +70,6 @@ export const editDataLoader = async ({ params }) => {
 export const action = async ({ request, params }) => {
   const data = await request.formData();
   const myData = Object.fromEntries(data.entries());
-  console.log(request);
   fetch(
     `http://localhost:5000/events/${params.eventId ? params.eventId : ""}`,
     {

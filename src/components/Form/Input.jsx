@@ -17,7 +17,7 @@ export default function Input({
       <Tag
         id={name}
         name={name}
-        className={`outline-none border border-gray-400 p-2 rounded w-full mt-1 mb-3${
+        className={`outline-none border border-gray-400 p-2 rounded w-full mt-1 mb-3 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-none ${
           className && className
         }`}
         required={required}

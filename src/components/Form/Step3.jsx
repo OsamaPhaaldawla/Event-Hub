@@ -29,7 +29,7 @@ export default function Step3({ prev, oldData }) {
       <Input
         name="hosterName"
         label="Name:"
-        placeHolder="Enter your Name"
+        placeholder="Enter your Name"
         required
         error={errors.hosterName}
         defaultValue={oldData ? oldData.hosterName : ""}
@@ -38,7 +38,7 @@ export default function Step3({ prev, oldData }) {
         name="hosterEmail"
         type="email"
         label="Email:"
-        placeHolder="name@example.com"
+        placeholder="name@example.com"
         required
         error={errors.hosterEmail}
         defaultValue={oldData ? oldData.hosterEmail : ""}
@@ -61,7 +61,7 @@ export default function Step3({ prev, oldData }) {
                 </div>
               </div>
             }
-            placeHolder="***********"
+            placeholder="***********"
             type="password"
             error={errors.hosterPassword}
             defaultValue={oldData ? oldData.hosterPassword : ""}
@@ -72,7 +72,7 @@ export default function Step3({ prev, oldData }) {
         as="textarea"
         name="hosterDescription"
         label="Description"
-        placeHolder="Write about your self"
+        placeholder="Write about your self"
         className="resize-none"
         rows="3"
         defaultValue={oldData ? oldData.hosterDescription : ""}

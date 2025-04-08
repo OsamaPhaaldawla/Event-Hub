@@ -12,6 +12,7 @@ import Error from "./routes/Error";
 import Host, { action as hostAction, editDataLoader } from "./routes/Host";
 import { loader as hostLoader } from "./components/Form/Step2";
 import { AuthProvider } from "./context";
+import CreateVenue, { action as createVenueAction } from "./routes/CreateVenue";
 
 const router = createBrowserRouter([
   {
@@ -54,6 +55,15 @@ const router = createBrowserRouter([
       {
         path: "/admin",
         element: <Login header="Admin Login" key="admin-login" />,
+      },
+      // {
+      //   path: "/venues",
+      //   element: <Venues />,
+      // },
+      {
+        path: "/venues/new",
+        element: <CreateVenue />,
+        action: createVenueAction,
       },
     ],
   },
