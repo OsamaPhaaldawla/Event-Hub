@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { FaLocationDot } from "react-icons/fa6";
 
 export default function VenueCard({ venue }) {
   return (
@@ -13,17 +14,30 @@ export default function VenueCard({ venue }) {
 
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex flex-col flex-1">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold capitalize">{venue.name}</h2>
-            <a
-              href={venue.url}
-              target="_blank"
-              className="text-neutral-500 text-sm underline"
-            >
-              {venue.location}
-            </a>
+          <h2 className="text-2xl font-bold capitalize" dir="auto">
+            {venue.name}
+          </h2>
+          <a
+            href={venue.url}
+            target="_blank"
+            className="text-blue-600 text-md underline w-fit flex items-center gap-x-1"
+            dir="auto"
+          >
+            <FaLocationDot />
+            {venue.location}
+          </a>
+          <div className="flex items-center justify-between mb-2 text-lg text-neutral-700">
+            <p>
+              Capcity: <span className="text-sky-700">{venue.capacity}</span>
+            </p>
+            <p>
+              price: <span className="text-sky-700">{venue.price}/Hour</span>
+            </p>
           </div>
-          <p className="text-gray-600 line-clamp-2">{venue.description}</p>
+          <div className="w-full h-[1px] bg-gray-500 my-2" />
+          <p className="text-black line-clamp-2" dir="auto">
+            {venue.description}
+          </p>
         </div>
         <Link
           to={`/venues/${venue.id}`}

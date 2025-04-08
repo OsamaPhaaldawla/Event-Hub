@@ -10,7 +10,7 @@ export default function Venues() {
         <h1 className="text-3xl my-2 text-black/90 font-bold">
           Discover Amazing Venues:
         </h1>
-        <p className="leading-3 text-base italic text-gray-400">
+        <p className="leading-3 text-base italic text-gray-600">
           Find the perfect venue for your next big event — from elegant halls to
           open-air spaces!
         </p>
