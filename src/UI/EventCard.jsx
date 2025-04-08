@@ -2,12 +2,12 @@ import { Link } from "react-router";
 
 const EventCard = ({ event }) => {
   return (
-    <div className="bg-gray-100 rounded shadow-md overflow-hidden hover:scale-105 duration-300 flex flex-col">
+    <div className="bg-gray-100 rounded shadow-md hover:scale-105 duration-300 flex flex-col p-2">
       <div className="relative">
         <img
           src={event.image}
           alt={event.title}
-          className="w-full h-64 object-cover "
+          className="w-full h-64 object-cover"
         />
         <span className="absolute left-0 top-0 bg-black/90 text-white px-5 py-3 rounded-br-lg">
           {event.accessType}
