@@ -14,13 +14,19 @@ export default function TypeSelector({ handleClick, types }) {
     }
   }
 
-  useEffect(() => {
+  function scrollablality() {
     if (typeList.current) {
       setNotScrollable(
         typeList.current.clientWidth + 32 <
           typeList.current.parentElement.clientWidth
       );
     }
+  }
+
+  window.onresize = () => scrollablality();
+
+  useEffect(() => {
+    scrollablality();
   }, [typeList, notScrollable]);
 
   function onTypeClick(type) {

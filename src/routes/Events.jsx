@@ -27,16 +27,25 @@ export default function Events() {
           Explore a wide range of events from tech meetups to unforgettable
           parties!
         </p>
-        <TypeSelector handleClick={handleClick} types={types} />
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-12">
-          {events ? (
-            filteredEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))
-          ) : (
-            <p>Loading Events... </p>
-          )}
-        </div>
+        {events.length === 0 ? (
+          <p className="text-center text-lg italic text-gray-800 mt-8">
+            Sorry, There is no events yet wait until someone add one or create
+            an event now.
+          </p>
+        ) : (
+          <>
+            <TypeSelector handleClick={handleClick} types={types} />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 my-12">
+              {events ? (
+                filteredEvents.map((event) => (
+                  <EventCard key={event.id} event={event} />
+                ))
+              ) : (
+                <p>Loading Events... </p>
+              )}
+            </div>
+          </>
+        )}
       </div>
     </>
   );

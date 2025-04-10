@@ -70,20 +70,43 @@ export default function CreateVenue({ edit }) {
 
 export const action = async ({ request, params }) => {
   const data = await request.formData();
+
+  // Collect the images from the form
   let images = data.getAll("images");
-  const myData = Object.fromEntries(data.entries());
-  myData.availableSlots = JSON.parse(myData.availableSlots);
-  myData.images = images;
 
-  console.log(myData);
+  // Parse availableSlots from the formData if necessary
+  let availableSlots = JSON.parse(data.get("availableSlots"));
 
-  fetch(
-    `http://localhost:5000/venues/${params.venueId ? params.venueId : ""}`,
+  // Create a new FormData object to send in the request body
+  let formData = new FormData();
+
+  // Add each field from the existing FormData
+  data.forEach((value, key) => {
+    // Exclude the 'images' field, as we're handling it separately
+    if (key !== "images" && key !== "availableSlots") {
+      formData.append(key, value);
+    }
+  });
+
+  // Append the availableSlots (already parsed) as a stringified JSON
+  formData.append("availableSlots", JSON.stringify(availableSlots));
+
+  // Append the images array (can be handled as multiple files)
+  images.forEach((image) => {
+    formData.append("images", image);
+  });
+
+  // Send the FormData to the backend
+  const response = await fetch(
+    `http://localhost:3000/venues${params.venueId ? "/" + params.venueId : ""}`,
     {
-      method: request.method,
-      body: JSON.stringify(myData),
+      method: request.method, // "POST" or "PUT" depending on the method
+      body: formData,
     }
   );
+
+  const result = await response.json();
+  console.log(result);
 
   return redirect("/venues");
 };

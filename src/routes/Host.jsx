@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Form, redirect, useLoaderData } from "react-router";
+import { useRef, useState } from "react";
+import { Form, redirect, useLoaderData, useSubmit } from "react-router";
 import Step1 from "../components/Form/Step1";
 import FormProgress from "../components/Form/FormProgress";
 import Step2 from "../components/Form/Step2";
@@ -9,9 +9,19 @@ export default function Host({ edit }) {
   const [activeStep, setActiveStep] = useState(1);
   let data = useLoaderData();
   let event = data.eventData;
+  const submit = useSubmit();
+  const form = useRef();
 
   const nextStep = () => setActiveStep((prev) => prev + 1);
   const prevStep = () => setActiveStep((prev) => prev - 1);
+
+  const handleSubmit = () => {
+    const formData = new FormData(form.current);
+    submit(formData, {
+      method: edit ? "PUT" : "POST",
+      encType: "multipart/form-data",
+    });
+  };
 
   return (
     <>
@@ -22,9 +32,11 @@ export default function Host({ edit }) {
           </div>
           <div className="mt-12 w-2/3 px-4">
             <Form
+              ref={form}
               encType="multipart/form-data"
               method={edit ? "PUT" : "POST"}
               className="max-w-[92%] mx-auto"
+              //? working without it onSubmit={handleSubmit}
             >
               <div className={activeStep === 1 ? "block" : "hidden"}>
                 <Step1 oldData={edit && event} next={nextStep} />
@@ -40,7 +52,11 @@ export default function Host({ edit }) {
               </div>
 
               <div className={activeStep === 3 ? "block" : "hidden"}>
-                <Step3 oldData={edit && event} prev={prevStep} />
+                <Step3
+                  oldData={edit && event}
+                  prev={prevStep}
+                  handleSubmit={handleSubmit}
+                />
               </div>
             </Form>
           </div>
@@ -51,8 +67,10 @@ export default function Host({ edit }) {
 }
 
 export const editDataLoader = async ({ params }) => {
-  const resEvents = await fetch(`/api/events/${params.eventId}`);
-  const resVenues = await fetch("/api/venues");
+  const resEvents = await fetch(
+    `http://localhost:3000/events/${params.eventId}`
+  );
+  const resVenues = await fetch("http://localhost:3000/venues");
 
   if (!resEvents.ok) {
     throw { message: "Could not fetch event details." };
@@ -68,15 +86,35 @@ export const editDataLoader = async ({ params }) => {
 };
 
 export const action = async ({ request, params }) => {
-  const data = await request.formData();
-  const myData = Object.fromEntries(data.entries());
-  fetch(
-    `http://localhost:5000/events/${params.eventId ? params.eventId : ""}`,
-    {
-      method: request.method,
-      body: JSON.stringify(myData),
-    }
-  );
+  const formData = await request.formData();
 
-  return redirect("/events");
+  // Debug: Check ALL FormData entries
+  console.log("All FormData entries:");
+  for (let [key, value] of formData.entries()) {
+    console.log(key, value instanceof File ? `File: ${value.name}` : value);
+  }
+
+  // Reconstruct FormData with proper file handling
+  const fetchFormData = new FormData();
+
+  // Copy all fields (including files)
+  for (let [key, value] of formData.entries()) {
+    fetchFormData.append(key, value);
+  }
+
+  try {
+    const response = await fetch(
+      `http://localhost:3000/events/${params.eventId || ""}`,
+      {
+        method: request.method,
+        body: fetchFormData, // Use reconstructed FormData
+      }
+    );
+
+    if (!response.ok) throw new Error("Failed to submit");
+    return redirect("/events");
+  } catch (error) {
+    console.error("Submission error:", error);
+    throw { error: error.message, status: 500 };
+  }
 };

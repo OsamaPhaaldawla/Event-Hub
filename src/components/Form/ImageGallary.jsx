@@ -1,33 +1,38 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-export default function ImageGallary({ selectedVenue }) {
-  const [selectedImage, setSelectedImage] = useState(selectedVenue.images[0]);
+export default function ImageGallary({ images }) {
+  const [selectedImage, setSelectedImage] = useState(images[0]);
 
-  function handleImageChange(url) {
-    setSelectedImage(url);
+  useEffect(() => {
+    if (images.length > 0) {
+      setSelectedImage(images[0]);
+    }
+  }, [images]);
+
+  function handleImageChange(image) {
+    setSelectedImage(image);
   }
 
   return (
     <div className="w-full">
       <div className="w-full h-[400px] mt-6">
         <img
-          src={selectedImage}
+          src={selectedImage.url}
           alt="Venue image"
           className="w-full h-full rounded-lg"
         />
       </div>
       <div className="flex h-[90px] my-6 gap-2 justify-between lg:max-w-[80%] mx-auto lg:gap-10 xl:gap-12 xl:max-w-[70%] bg-stone-300 p-3 rounded-lg">
-        {selectedVenue.images.map((url) => (
-          <div className="w-full">
+        {images.map((image) => (
+          <div className="w-full" key={image.url}>
             <img
-              src={url}
-              key={url}
+              src={image.url}
               className={`w-[${
-                100 / selectedVenue.images.length
+                100 / images.length
               }%] rounded-lg w-full h-full border-2 border-blue-600 ${
-                url === selectedImage ? "border-4 saturate-50" : ""
+                image.url === selectedImage.url ? "border-4 saturate-50" : ""
               }`}
-              onClick={() => handleImageChange(url)}
+              onClick={() => handleImageChange(image)}
             />
           </div>
         ))}

@@ -55,7 +55,7 @@ export default function EventDetails() {
               </p>
             </div>
             <img
-              src={event.image}
+              src={event.image.url}
               alt={event.title}
               className="w-1/2 h-90 object-cover rounded-2xl mb-6"
             />
@@ -133,7 +133,7 @@ export default function EventDetails() {
 }
 
 export const loader = async ({ params }) => {
-  const res = await fetch(`http://localhost:5000/events/${params.eventId}`);
+  const res = await fetch(`http://localhost:3000/events/${params.eventId}`);
 
   if (!res.ok) {
     throw { message: "Could not fetch event details" };

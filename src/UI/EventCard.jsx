@@ -1,6 +1,17 @@
 import { Link } from "react-router";
 
 const EventCard = ({ event }) => {
+  const formattedDate = new Date(event.date).toISOString().split("T")[0];
+  const date = new Date(formattedDate + "T" + event.time);
+  const formatted = date
+    .toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    })
+    .replace(",", " •");
   return (
     <div className="bg-gray-100 rounded shadow-md hover:scale-105 duration-300 flex flex-col p-2">
       <div className="relative">
@@ -16,9 +27,11 @@ const EventCard = ({ event }) => {
 
       <div className="p-4 flex flex-col gap-2 flex-1">
         <div className="flex flex-col flex-1">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col ">
+            <span className="text-neutral-400 text-sm text-right">
+              {formatted}
+            </span>
             <h2 className="text-xl font-bold capitalize">{event.title}</h2>
-            <span className="text-neutral-400 text-sm">{event.date}</span>
           </div>
           <p className="text-gray-600 line-clamp-2">{event.description}</p>
         </div>

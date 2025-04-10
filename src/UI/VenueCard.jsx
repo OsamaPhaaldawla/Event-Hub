@@ -2,11 +2,12 @@ import { Link } from "react-router";
 import { FaLocationDot } from "react-icons/fa6";
 
 export default function VenueCard({ venue }) {
+  console.log(venue);
   return (
     <div className="bg-gray-100 rounded shadow-md overflow-hidden hover:scale-105 duration-300 flex flex-col p-2">
       <div className="relative">
         <img
-          src={venue.images[0]}
+          src={venue.images[0].url}
           alt={venue.name}
           className="w-full h-64 object-cover rounded"
         />

@@ -12,11 +12,18 @@ export default function RecentlyEvents() {
           <h2 className="text-black text-3xl font-semibold mb-10">
             Recently Added Events:
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {recentlyEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
-            ))}
-          </div>
+          {events.length === 0 ? (
+            <p className="text-center text-lg italic text-gray-800">
+              Sorry, There is no events yet wait until someone add one or create
+              an event now.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {recentlyEvents.map((event) => (
+                <EventCard key={event.id} event={event} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </>
@@ -24,7 +31,7 @@ export default function RecentlyEvents() {
 }
 
 export const loader = async () => {
-  const res = await fetch("/api/events");
+  const res = await fetch("http://localhost:3000/events");
   if (!res.ok) {
     throw {
       message: "Failed to fetch events.",

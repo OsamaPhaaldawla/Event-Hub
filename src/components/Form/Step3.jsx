@@ -1,24 +1,21 @@
 import { useState } from "react";
 import Input from "./Input";
 import { validateStep3 } from "./Validatioin";
-import { useSubmit } from "react-router";
 
-export default function Step3({ prev, oldData }) {
+export default function Step3({ prev, oldData, handleSubmit }) {
   const [errors, setErrors] = useState({});
-  const submit = useSubmit();
 
-  function handleSubmit(e) {
+  function onSubmit(e) {
     e.preventDefault();
-    const fd = new FormData(document.querySelector("form"));
-    const data = Object.fromEntries(fd.entries());
-    const { validationErrors } = validateStep3(data);
+    const formData = new FormData(document.querySelector("form"));
+
+    const validationData = Object.fromEntries(formData.entries());
+    const { validationErrors } = validateStep3(validationData);
+
     if (validationErrors) {
       setErrors({ ...validationErrors });
     } else {
-      submit(data, {
-        method: oldData ? "PUT" : "POST",
-        encType: "multipart/form-data",
-      });
+      handleSubmit();
     }
   }
 
@@ -89,7 +86,7 @@ export default function Step3({ prev, oldData }) {
         <button
           type="submit"
           className="bg-green-500 px-4 py-2 text-white rounded"
-          onClick={handleSubmit}
+          onClick={onSubmit}
         >
           Submit
         </button>

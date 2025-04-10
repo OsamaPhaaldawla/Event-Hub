@@ -62,7 +62,7 @@ export default function Step2({ next, prev, oldData }) {
       />
       {selectedVenue.name && (
         <>
-          <ImageGallary selectedVenue={selectedVenue} />
+          <ImageGallary images={selectedVenue.images} />
           <div>
             <div className="flex justify-between items-center mt-3 mb-2">
               <p className="text-xl">
@@ -108,7 +108,9 @@ export default function Step2({ next, prev, oldData }) {
                 />
               </div>
             </div>
-            <p className="mt-2">{selectedVenue.description}</p>
+            <p className="mt-2" dir="auto">
+              {selectedVenue.description}
+            </p>
           </div>
         </>
       )}
@@ -133,7 +135,7 @@ export default function Step2({ next, prev, oldData }) {
 }
 
 export const loader = async () => {
-  const res = await fetch("/api/venues");
+  const res = await fetch("http://localhost:3000/venues");
   if (!res.ok)
     throw new Error("Failed to fetch venues please try to refresh the page.");
   const data = await res.json();
