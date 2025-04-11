@@ -1,8 +1,8 @@
 import { useLoaderData } from "react-router";
 import SelectInput from "./SelectInput";
 import { useState } from "react";
-import ImageGallary from "./ImageGallary";
 import { validateStep2 } from "./Validatioin";
+import ImageGall from "../ImageGall";
 
 export default function Step2({ next, prev, oldData }) {
   let venues = useLoaderData();
@@ -62,7 +62,7 @@ export default function Step2({ next, prev, oldData }) {
       />
       {selectedVenue.name && (
         <>
-          <ImageGallary images={selectedVenue.images} />
+          <ImageGall images={selectedVenue.images} />
           <div>
             <div className="flex justify-between items-center mt-3 mb-2">
               <p className="text-xl">
@@ -108,7 +108,7 @@ export default function Step2({ next, prev, oldData }) {
                 />
               </div>
             </div>
-            <p className="mt-2" dir="auto">
+            <p className="mt-2 whitespace-pre-line" dir="auto">
               {selectedVenue.description}
             </p>
           </div>

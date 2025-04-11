@@ -5,6 +5,23 @@ import background4 from "../assets/hero-4.webp";
 import background5 from "../assets/hero-5.jpg";
 import background6 from "../assets/hero-6.webp";
 
+export function formatDate(date, time) {
+  const newDate = new Date(date).toISOString().split("T")[0];
+  let formattedDate = date;
+  if (time) {
+    formattedDate = new Date(newDate + "T" + time);
+  }
+  return formattedDate
+    .toLocaleString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "numeric",
+      minute: "2-digit",
+    })
+    .replace(",", " •");
+}
+
 export const eventTypes = [
   "Corporate Meeting",
   "Networking Event",
@@ -32,7 +49,6 @@ export const eventTypes = [
   "Church & Religious Gathering",
   "Meditation & Mindfulness",
   "Food Festival",
-  "Wine & Beer Tasting",
   "Cooking Class",
   "Birthday Celebration",
   "Others",

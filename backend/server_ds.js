@@ -216,6 +216,7 @@ app.post("/events", upload.single("image"), async (req, res) => {
       venueName,
       date,
       time,
+      price,
       hosterName,
       hosterEmail,
       hosterPassword,
@@ -230,15 +231,16 @@ app.post("/events", upload.single("image"), async (req, res) => {
       // Insert event with image path
       const [eventResult] = await connection.query(
         `INSERT INTO events (
-            title, subtitle, type, access_type, seats, description,
+            title, subtitle, type, access_type, seats, price, description,
             image_path, venue_name, date, time
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           title,
           subtitle,
           type,
           accessType,
           seats,
+          price ? parseFloat(price) : 0.0,
           description,
           req.file ? req.file.filename : null,
           venueName,
@@ -282,6 +284,7 @@ app.get("/events", async (req, res) => {
           e.id,
           e.title,
           e.subtitle,
+          e.price,
           e.type,
           e.description,
           e.access_type as accessType,
@@ -298,6 +301,7 @@ app.get("/events", async (req, res) => {
       id: event.id,
       title: event.title,
       subtitle: event.subtitle,
+      price: event.price,
       type: event.type,
       accessType: event.accessType,
       description: event.description,
@@ -326,6 +330,7 @@ app.get("/events/:id", async (req, res) => {
           id,
           title,
           subtitle,
+          price,
           type,
           access_type as accessType,
           seats,

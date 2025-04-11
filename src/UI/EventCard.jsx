@@ -1,17 +1,8 @@
 import { Link } from "react-router";
+import { formatDate } from "../constants";
 
 const EventCard = ({ event }) => {
-  const formattedDate = new Date(event.date).toISOString().split("T")[0];
-  const date = new Date(formattedDate + "T" + event.time);
-  const formatted = date
-    .toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-    })
-    .replace(",", " •");
+  const formatted = formatDate(event.date, event.time);
   return (
     <div className="bg-gray-100 rounded shadow-md hover:scale-105 duration-300 flex flex-col p-2">
       <div className="relative">

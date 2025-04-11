@@ -14,6 +14,9 @@ import { loader as venuesLoader } from "./components/Form/Step2";
 import { AuthProvider } from "./context";
 import CreateVenue, { action as createVenueAction } from "./routes/CreateVenue";
 import Venues from "./routes/Venues";
+import VenueDetails, {
+  loader as venueDetailsLoader,
+} from "./routes/VenueDetails";
 
 const router = createBrowserRouter([
   {
@@ -61,6 +64,11 @@ const router = createBrowserRouter([
         path: "/venues",
         element: <Venues />,
         loader: venuesLoader,
+      },
+      {
+        path: "/venues/:venueId",
+        element: <VenueDetails />,
+        loader: venueDetailsLoader,
       },
       {
         path: "/venues/new",
