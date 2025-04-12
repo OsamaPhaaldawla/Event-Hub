@@ -1,72 +1,54 @@
-import { Form, useLoaderData, useNavigate } from "react-router";
-import Input from "../components/Form/Input";
-import { useRef, useState } from "react";
-import { useAuth } from "../context";
+// src/pages/Login.jsx
+import { useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router";
 
-export default function Login({ header }) {
-  const navigate = useNavigate();
-  const [error, setError] = useState({
-    emailError: "",
-    passError: "",
-  });
-  const event = useLoaderData();
-  const email = useRef(null);
-  const pass = useRef(null);
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const { login } = useAuth();
+  const navigate = useNavigate();
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (event) {
-      if (email.current.value === event.hosterEmail) {
-        if (pass.current.value === event.hosterPassword) {
-          navigate(`/events/${event.id}/edit`);
-        } else {
-          setError((prevErrors) => ({
-            ...prevErrors,
-            passError: "Wrong password!",
-          }));
-        }
-      } else {
-        setError((prevErrors) => ({
-          ...prevErrors,
-          emailError: "Wrong email address!",
-        }));
-      }
+    const res = await fetch("http://localhost:3000/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+
+    console.log(data);
+
+    if (res.ok) {
+      login(data.token);
+      navigate("/"); // or dashboard
     } else {
-      login();
-      navigate("/events");
+      alert(data.message || "Login failed");
     }
   }
 
   return (
-    <div className="container mx-auto px-3 min-h-[60vh] flex justify-center items-center">
-      <div className="w-1/3 justify-center items-center">
-        <h1 className="text-center text-3xl font-semibold mb-4">{header}</h1>
-        <Form onSubmit={handleSubmit}>
-          <Input
-            label="Email:"
-            name="email"
-            required
-            type="email"
-            ref={email}
-            error={error.emailError}
-          />
-          <Input
-            label="Password:"
-            name="password"
-            required
-            type="password"
-            ref={pass}
-            error={error.passError}
-          />
-          <button
-            type="submit"
-            className="bg-green-500 px-4 py-2 text-white rounded mt-2 float-right"
-          >
-            Log in
-          </button>
-        </Form>
-      </div>
-    </div>
+    <form onSubmit={handleSubmit} className="p-6 max-w-md mx-auto">
+      <h2 className="text-xl mb-4">Login</h2>
+      <input
+        placeholder="Email"
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-full mb-2 p-2 border"
+      />
+      <input
+        placeholder="Password"
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        className="w-full mb-4 p-2 border"
+      />
+      <button className="bg-blue-600 text-white px-4 py-2 rounded">
+        Login
+      </button>
+    </form>
   );
 }

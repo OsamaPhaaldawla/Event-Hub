@@ -1,17 +1,11 @@
 import logo from "../assets/logo.png";
-import { useLocation } from "react-router"; // useNavigate
+import { Link, useLocation } from "react-router"; // useNavigate
 import Navlink from "../UI/Navlink.jsx";
-// import { useAuth } from "../context/index.jsx";
+import { useAuth } from "../context/AuthContext.jsx";
 
 export default function Navbar() {
   const location = useLocation();
-  // const navigate = useNavigate();
-  // const { temp, logout } = useAuth();
-
-  // function handleLogout() {
-  //   logout();
-  //   navigate("/");
-  // }
+  const { user, logout } = useAuth();
 
   return (
     <nav className="fixed top-0 left-0 w-full bg-white/90 backdrop-blur-md shadow-md z-50 ">
@@ -33,18 +27,16 @@ export default function Navbar() {
           <Navlink to="/host" isActive={location.pathname === "/host"}>
             Host an event
           </Navlink>
-          {/* {temp ? (
-            <button
-              className="text-2xl text-gray-700 hover:text-blue-600 duration-300 cursor-pointer"
-              onClick={handleLogout}
-            >
-              Logout
-            </button>
+          {user ? (
+            <div>
+              <p>
+                Welcome, {user.name || user.email} ({user.role})
+              </p>
+              <button onClick={logout}>Logout</button>
+            </div>
           ) : (
-            <Navlink to="/login" isActive={location.pathname === "/login"}>
-              Login
-            </Navlink>
-          )} */}
+            <Link to="/login">Login</Link>
+          )}
         </ul>
       </div>
     </nav>

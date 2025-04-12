@@ -1,397 +1,389 @@
 /* eslint-disable no-undef */
+require("dotenv").config();
 const express = require("express");
-const cors = require("cors");
-const mysql = require("mysql2");
+const mysql = require("mysql2/promise");
 const multer = require("multer");
-// const dotenv = require("dotenv");
 const path = require("path");
+const bodyParser = require("body-parser");
+const cors = require("cors");
 const fs = require("fs");
-// const upload = require("multer")({ dest: "uploads/" });
-
-// dotenv.config();
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 
-// MySQL Connection
-const db = mysql.createConnection({
-  host: "localhost",
-  user: "root",
-  password: "alsunna500",
-  database: "event_management",
-});
-
-/**
- * POST /api/venues
- * Create new venue
- */
-
-// Configure multer to save images to the 'uploads' directory
+// Configure file upload
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Store images in the 'uploads' folder
+    const uploadDir = process.env.UPLOAD_DIR;
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname);
-    const filename = Date.now() + ext; // Create a unique name for the file
-    cb(null, filename);
+    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, uniqueSuffix + path.extname(file.originalname));
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
 
-app.use("/uploads", express.static("uploads"));
-
-// Endpoint to handle venue creation
-app.post("/api/venues", upload.array("images"), (req, res) => {
-  const { name, location, capacity, price, description, availableSlots } =
-    req.body;
-  const images = req.files; // Array of uploaded files
-
-  if (!images || images.length === 0) {
-    return res.status(400).json({ error: "No images uploaded" });
-  }
-
-  // Insert venue data into the database
-  const sql = `INSERT INTO venues (name, location, capacity, price, description) VALUES (?, ?, ?, ?, ?)`;
-  const values = [name, location, capacity, price, description];
-
-  db.query(sql, values, (err, result) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ error: "Insert failed", details: err.message });
-    }
-
-    const venueId = result.insertId;
-
-    // After the venue is created, insert images into a separate table (venue_images)
-    images.forEach((image) => {
-      const imagePath = `/uploads/${image.filename}`; // The path to the image
-
-      const imageSql = `INSERT INTO venue_images (venue_id, image_path) VALUES (?, ?)`;
-      db.query(imageSql, [venueId, imagePath], (err) => {
-        if (err) {
-          return res
-            .status(500)
-            .json({ error: "Image insert failed", details: err.message });
-        }
-      });
-    });
-
-    res.status(201).json({
-      message: "Venue created with images ✅",
-      venueId,
-    });
-  });
+// Create database connection pool
+const pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
 });
 
-app.get("/api/venues", (req, res) => {
-  const sql = `SELECT v.id, v.name, v.location, v.capacity, v.price, v.description, vi.image_path
-               FROM venues v
-               LEFT JOIN venue_images vi ON vi.venue_id = v.id`;
+// Serve uploaded images statically
+app.use("/uploads", express.static(process.env.UPLOAD_DIR));
 
-  db.query(sql, (err, results) => {
-    if (err) {
-      return res
-        .status(500)
-        .json({ error: "Error fetching venues", details: err.message });
+// POST endpoint to create a new venue
+app.post("/venues", upload.array("images"), async (req, res) => {
+  try {
+    const {
+      name,
+      location,
+      url,
+      capacity,
+      description,
+      price,
+      availableSlots,
+    } = req.body;
+
+    // Parse availableSlots if it's a string
+    const slots =
+      typeof availableSlots === "string"
+        ? JSON.parse(availableSlots)
+        : availableSlots;
+
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
+
+    try {
+      // Insert venue
+      const [venueResult] = await connection.query(
+        "INSERT INTO venues (name, location, url, capacity, description, price) VALUES (?, ?, ?, ?, ?, ?)",
+        [name, location, url, capacity, description, price]
+      );
+      const venueId = venueResult.insertId;
+
+      // Insert available slots
+      for (const slot of slots) {
+        for (const time of slot.times) {
+          await connection.query(
+            "INSERT INTO available_slots (venue_id, date, time) VALUES (?, ?, ?)",
+            [venueId, slot.date, time]
+          );
+        }
+      }
+
+      // Insert images
+      if (req.files && req.files.length > 0) {
+        for (const file of req.files) {
+          await connection.query(
+            "INSERT INTO venue_images (venue_id, image_path) VALUES (?, ?)",
+            [venueId, file.filename]
+          );
+        }
+      }
+
+      await connection.commit();
+      connection.release();
+
+      res.status(201).json({ message: "Venue created successfully", venueId });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error creating venue:", error);
+    res.status(500).json({ error: "Failed to create venue" });
+  }
+});
+
+// GET endpoint to retrieve all venues
+app.get("/venues", async (req, res) => {
+  try {
+    const [venues] = await pool.query("SELECT * FROM venues");
+
+    for (const venue of venues) {
+      const [slots] = await pool.query(
+        `SELECT 
+    DATE_FORMAT(date, '%Y-%m-%d') AS date, TIME_FORMAT(time, '%H:%i') AS time FROM available_slots WHERE venue_id = ? ORDER BY date, time`,
+        [venue.id]
+      );
+
+      // Group slots by date
+      const groupedSlots = {};
+      slots.forEach((slot) => {
+        if (!groupedSlots[slot.date]) {
+          groupedSlots[slot.date] = [];
+        }
+        groupedSlots[slot.date].push(slot.time);
+      });
+
+      venue.availableSlots = Object.keys(groupedSlots).map((date) => ({
+        date,
+        times: groupedSlots[date],
+      }));
+
+      // Get images
+      const [images] = await pool.query(
+        "SELECT image_path FROM venue_images WHERE venue_id = ?",
+        [venue.id]
+      );
+      venue.images = images.map((img) => ({
+        url: `${req.protocol}://${req.get("host")}/uploads/${img.image_path}`,
+      }));
     }
 
-    const venues = results.map((venue) => ({
-      id: venue.id,
-      name: venue.name,
-      location: venue.location,
-      capacity: venue.capacity,
-      price: venue.price,
-      description: venue.description,
-      imageUrl: `http://localhost:5000${venue.image_path}`, // Full URL to the image
+    res.json(venues);
+  } catch (error) {
+    console.error("Error fetching venues:", error);
+    res.status(500).json({ error: "Failed to fetch venues" });
+  }
+});
+
+// GET endpoint for full venue details
+app.get("/venues/:id", async (req, res) => {
+  try {
+    const [venues] = await pool.query("SELECT * FROM venues WHERE id = ?", [
+      req.params.id,
+    ]);
+
+    if (venues.length === 0) {
+      return res.status(404).json({ error: "Venue not found" });
+    }
+
+    const venue = venues[0];
+
+    // Get available slots
+    const [slots] = await pool.query(
+      'SELECT date, TIME_FORMAT(time, "%H:%i") as time FROM available_slots WHERE venue_id = ? ORDER BY date, time',
+      [venue.id]
+    );
+
+    // Group slots by date
+    const groupedSlots = {};
+    slots.forEach((slot) => {
+      if (!groupedSlots[slot.date]) {
+        groupedSlots[slot.date] = [];
+      }
+      groupedSlots[slot.date].push(slot.time);
+    });
+
+    venue.availableSlots = Object.keys(groupedSlots).map((date) => ({
+      date,
+      times: groupedSlots[date],
     }));
 
-    res.status(200).json(venues);
-  });
-});
-
-// ********************************************************************************
-
-//!!!!!!!!!! These is Wroking don't touch unliss the images uploading and sending
-// const upload = multer({ dest: "uploads/" });
-// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-// app.post("/api/venues", upload.array("images"), (req, res) => {
-//   console.log(req.body);
-//   try {
-//     const { name, location, url, capacity, price, description } = req.body;
-
-//     // ✅ Parse the stringified availableSlots
-//     const availableSlots = JSON.parse(req.body.availableSlots);
-
-//     // ✅ Handle files
-//     const imagePaths = req.files.map((file) => `/uploads/${file.filename}`);
-
-//     // ✅ Insert venue into DB (without images yet)
-//     const sql = `
-//       INSERT INTO venues (name, location, url, capacity, price, description)
-//       VALUES (?, ?, ?, ?, ?, ?)
-//     `;
-//     const values = [name, location, url, capacity, price, description];
-
-//     db.query(sql, values, (err, result) => {
-//       if (err) {
-//         return res
-//           .status(500)
-//           .json({ error: "Insert failed", details: err.message });
-//       }
-
-//       const venueId = result.insertId;
-
-//       // ✅ Insert images
-//       imagePaths.forEach((imagePath) => {
-//         const imgSQL = `
-//           INSERT INTO venue_images (venue_id, image_url)
-//           VALUES (?, ?)
-//         `;
-//         db.query(imgSQL, [venueId, imagePath], (err) => {
-//           if (err) {
-//             console.error("Image insert failed:", err.message);
-//           }
-//         });
-//       });
-
-//       // ✅ Insert available slots
-//       availableSlots.forEach((slot) => {
-//         const slotSQL = `
-//           INSERT INTO available_slots (venue_id, date, times)
-//           VALUES (?, ?, ?)
-//         `;
-//         db.query(
-//           slotSQL,
-//           [venueId, slot.date, JSON.stringify(slot.times)],
-//           (err) => {
-//             if (err) {
-//               console.error("Slot insert failed:", err.message);
-//             }
-//           }
-//         );
-//       });
-
-//       res.status(201).json({
-//         message: "Venue created ✅",
-//         venueId,
-//       });
-//     });
-//   } catch (err) {
-//     console.error("Server error:", err.message);
-//     res.status(500).json({ error: "Server error", details: err.message });
-//   }
-// });
-
-//? updating
-
-// app.get("/api/venues", (req, res) => {
-//   const sql = `
-//     SELECT v.id, v.name, v.location, v.url, v.capacity, v.price, v.description,
-//       (SELECT image_url FROM venue_images WHERE venue_id = v.id LIMIT 1) AS image
-//     FROM venues v
-//   `;
-
-//   db.query(sql, (err, results) => {
-//     if (err) return res.status(500).json({ error: "Failed to fetch venues" });
-
-//     res.json(results);
-//   });
-// });
-
-//   const sql = "SELECT * FROM venues";
-
-//   db.query(sql, (err, results) => {
-//     if (err)
-//       return res.status(500).json({ error: "Fetch failed", details: err });
-
-//     const formatted = results.map((venue) => ({
-//       id: venue.id,
-//       name: venue.name,
-//       location: venue.location,
-//       url: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-//         venue.location
-//       )}`,
-//       images: [
-//         venue.image
-//           ? `data:image/jpeg;base64,${venue.image.toString("base64")}`
-//           : "/placeholder.jpg",
-//       ],
-//       capacity: venue.capacity,
-//       price: venue.price,
-//       description: venue.description,
-//     }));
-
-//     res.json(formatted);
-//   });
-// });
-
-/**
- * GET /api/venues/:id
- * Fetch full venue details
- */
-app.get("/api/venues/:id", (req, res) => {
-  const { id } = req.params;
-  const sql = "SELECT * FROM venues WHERE id = ?";
-
-  db.query(sql, [id], (err, results) => {
-    if (err) return res.status(500).json({ error: "Fetch failed" });
-    if (results.length === 0)
-      return res.status(404).json({ message: "Venue not found" });
-
-    const venue = results[0];
-    venue.image = venue.image
-      ? `data:image/jpeg;base64,${venue.image.toString("base64")}`
-      : null;
+    // Get all images
+    const [images] = await pool.query(
+      "SELECT image_path FROM venue_images WHERE venue_id = ?",
+      [venue.id]
+    );
+    venue.images = images.map((img) => ({
+      url: `${req.protocol}://${req.get("host")}/uploads/${img.image_path}`,
+    }));
 
     res.json(venue);
-  });
-});
-
-/**
- * POST /api/events
- */
-app.post("/api/events", upload.single("image"), (req, res) => {
-  const {
-    title,
-    subtitle,
-    date,
-    location,
-    event_type,
-    description,
-    access_type,
-    seats,
-    price,
-  } = req.body;
-
-  const imageBuffer = req.file ? req.file.buffer : null;
-
-  const sql = `
-    INSERT INTO events
-    (title, subtitle, date, location, image, event_type, description, access_type, seats, price)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-
-  const values = [
-    title,
-    subtitle,
-    date,
-    location,
-    imageBuffer,
-    event_type,
-    description,
-    access_type,
-    seats,
-    price,
-  ];
-
-  db.query(sql, values, (err, result) => {
-    if (err)
-      return res.status(500).json({ error: "Insert failed", details: err });
-    res
-      .status(201)
-      .json({ message: "Event created", eventId: result.insertId });
-  });
-});
-
-/**
- * PUT /api/events/:id
- */
-app.put("/api/events/:id", upload.single("image"), (req, res) => {
-  const { id } = req.params;
-  const {
-    title,
-    subtitle,
-    date,
-    location,
-    event_type,
-    description,
-    access_type,
-    seats,
-    price,
-  } = req.body;
-
-  const imageBuffer = req.file ? req.file.buffer : null;
-
-  let sql = `
-    UPDATE events SET
-    title = ?, subtitle = ?, date = ?, location = ?, event_type = ?,
-    description = ?, access_type = ?, seats = ?, price = ?`;
-
-  const values = [
-    title,
-    subtitle,
-    date,
-    location,
-    event_type,
-    description,
-    access_type,
-    seats,
-    price,
-  ];
-
-  if (imageBuffer) {
-    sql += `, image = ?`;
-    values.push(imageBuffer);
+  } catch (error) {
+    console.error("Error fetching venue details:", error);
+    res.status(500).json({ error: "Failed to fetch venue details" });
   }
-
-  sql += ` WHERE id = ?`;
-  values.push(id);
-
-  db.query(sql, values, (err) => {
-    if (err)
-      return res.status(500).json({ error: "Update failed", details: err });
-    res.json({ message: "Event updated" });
-  });
 });
 
-/**
- * GET /api/events
- * (summary: id, title, date, location, image, access_type, description)
- */
-app.get("/api/events", (req, res) => {
-  const query = `
-    SELECT id, title, subtitle, date, location, image, access_type, description 
-    FROM events`;
+// POST endpoint to create a new event with single image
+app.post("/events", upload.single("image"), async (req, res) => {
+  console.log(req.body);
+  try {
+    const {
+      title,
+      subtitle,
+      type,
+      accessType,
+      seats,
+      description,
+      venueName,
+      date,
+      time,
+      price,
+      hosterName,
+      hosterEmail,
+      hosterPassword,
+      hosterDescription,
+    } = req.body;
 
-  db.query(query, (err, results) => {
-    if (err) return res.status(500).json({ error: err.message });
+    // Start transaction
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
 
-    const formatted = results.map((event) => ({
-      ...event,
-      image: event.image ? event.image.toString("base64") : null,
+    try {
+      // Insert event with image path
+      const [eventResult] = await connection.query(
+        `INSERT INTO events (
+            title, subtitle, type, access_type, seats, price, description,
+            image_path, venue_name, date, time
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          title,
+          subtitle,
+          type,
+          accessType,
+          seats,
+          price ? parseFloat(price) : 0.0,
+          description,
+          req.file ? req.file.filename : null,
+          venueName,
+          date,
+          time,
+        ]
+      );
+      const eventId = eventResult.insertId;
+
+      // Insert hoster information
+      await connection.query(
+        `INSERT INTO event_hosters (
+            event_id, name, email, password, description
+          ) VALUES (?, ?, ?, ?, ?)`,
+        [eventId, hosterName, hosterEmail, hosterPassword, hosterDescription]
+      );
+
+      await connection.commit();
+      connection.release();
+
+      res.status(201).json({
+        message: "Event created successfully",
+        eventId,
+      });
+    } catch (error) {
+      await connection.rollback();
+      connection.release();
+      throw error;
+    }
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({ error: "Failed to create event" });
+  }
+});
+
+// GET endpoint to retrieve all events (simplified view)
+app.get("/events", async (req, res) => {
+  try {
+    const [events] = await pool.query(`
+        SELECT 
+          e.id,
+          e.title,
+          e.subtitle,
+          e.price,
+          e.type,
+          e.description,
+          e.access_type as accessType,
+          e.venue_name as venueName,
+          e.date,
+          TIME_FORMAT(e.time, "%H:%i") as time,
+          e.image_path as image
+        FROM events e
+        ORDER BY e.date, e.time
+      `);
+
+    // Format the response with image URLs
+    const formattedEvents = events.map((event) => ({
+      id: event.id,
+      title: event.title,
+      subtitle: event.subtitle,
+      price: event.price,
+      type: event.type,
+      accessType: event.accessType,
+      description: event.description,
+      venueName: event.venueName,
+      date: event.date,
+      time: event.time,
+      image: event.image
+        ? `${req.protocol}://${req.get("host")}/uploads/${event.image}`
+        : null,
     }));
 
-    res.json(formatted);
-  });
+    res.json(formattedEvents);
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    res.status(500).json({ error: "Failed to fetch events" });
+  }
 });
 
-/**
- * GET /api/events/:id
- * (full event detail)
- */
-app.get("/api/events/:id", (req, res) => {
-  const { id } = req.params;
-  const sql = `SELECT * FROM events WHERE id = ?`;
+// GET endpoint to retrieve a single event with all details
+app.get("/events/:id", async (req, res) => {
+  try {
+    // Get basic event info
+    const [events] = await pool.query(
+      `
+        SELECT 
+          id,
+          title,
+          subtitle,
+          price,
+          type,
+          access_type as accessType,
+          seats,
+          description,
+          image_path as image,
+          venue_name as venueName,
+          date,
+          TIME_FORMAT(time, "%H:%i") as time
+        FROM events
+        WHERE id = ?
+      `,
+      [req.params.id]
+    );
 
-  db.query(sql, [id], (err, results) => {
-    if (err) return res.status(500).json({ error: "Fetch failed" });
-    if (results.length === 0)
-      return res.status(404).json({ message: "Event not found" });
+    if (events.length === 0) {
+      return res.status(404).json({ error: "Event not found" });
+    }
 
-    const event = results[0];
+    const event = events[0];
+
+    // Add full image URL if exists
     if (event.image) {
-      event.image = event.image.toString("base64");
+      event.image = {
+        url: `${req.protocol}://${req.get("host")}/uploads/${event.image}`,
+      };
+    } else {
+      event.image = null;
+    }
+
+    // Get hoster information
+    const [hosters] = await pool.query(
+      `SELECT 
+          name as hosterName,
+          email as hosterEmail,
+          description as hosterDescription
+         FROM event_hosters
+         WHERE event_id = ?`,
+      [event.id]
+    );
+
+    if (hosters.length > 0) {
+      event.hoster = hosters[0];
     }
 
     res.json(event);
-  });
+  } catch (error) {
+    console.error("Error fetching event details:", error);
+    res.status(500).json({ error: "Failed to fetch event details" });
+  }
 });
 
-// Server Start
-const PORT = process.env.PORT || 5000;
+// Start server
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
