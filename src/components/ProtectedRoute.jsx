@@ -9,7 +9,11 @@ export default function ProtectedRoute({ children, roles }) {
   if (!user) return <Navigate to="/login" />;
 
   if (roles && !roles.includes(user.role)) {
-    return <div className="text-center text-red-500 p-4">Access Denied</div>;
+    return (
+      <div className="text-3xl text-center text-gray-500 p-4">
+        Access Denied
+      </div>
+    );
   }
 
   return children;

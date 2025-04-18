@@ -324,6 +324,101 @@ app.post(
   }
 );
 
+// PUT endpoint to update an existing venue
+app.put(
+  "/venues/:venueId",
+  authMiddleware(["admin"]),
+  upload.array("images"),
+  async (req, res) => {
+    const { venueId } = req.params;
+    const {
+      name,
+      location,
+      url,
+      capacity,
+      description,
+      price,
+      availableSlots,
+    } = req.body;
+
+    // Parse available slots if needed
+    const slots =
+      typeof availableSlots === "string"
+        ? JSON.parse(availableSlots)
+        : availableSlots;
+
+    try {
+      const connection = await pool.getConnection();
+      await connection.beginTransaction();
+
+      try {
+        // Get current venue to ensure it exists
+        const [existingVenues] = await connection.query(
+          "SELECT * FROM venues WHERE id = ?",
+          [venueId]
+        );
+
+        if (existingVenues.length === 0) {
+          connection.release();
+          return res.status(404).json({ error: "Venue not found" });
+        }
+
+        // Update the venue info
+        await connection.query(
+          `UPDATE venues SET 
+            name = ?, location = ?, url = ?, capacity = ?, 
+            description = ?, price = ? 
+          WHERE id = ?`,
+          [name, location, url, capacity, description, price, venueId]
+        );
+
+        // Update available slots: delete old and insert new
+        await connection.query(
+          "DELETE FROM available_slots WHERE venue_id = ?",
+          [venueId]
+        );
+
+        for (const slot of slots) {
+          for (const time of slot.times) {
+            await connection.query(
+              "INSERT INTO available_slots (venue_id, date, time) VALUES (?, ?, ?)",
+              [venueId, slot.date, time]
+            );
+          }
+        }
+
+        // If new images are uploaded, replace old ones
+        if (req.files && req.files.length > 0) {
+          // Delete old image records (you can also choose to delete old files if needed)
+          await connection.query(
+            "DELETE FROM venue_images WHERE venue_id = ?",
+            [venueId]
+          );
+
+          for (const file of req.files) {
+            await connection.query(
+              "INSERT INTO venue_images (venue_id, image_path) VALUES (?, ?)",
+              [venueId, file.filename]
+            );
+          }
+        }
+
+        await connection.commit();
+        connection.release();
+
+        res.status(200).json({ message: "Venue updated successfully" });
+      } catch (err) {
+        await connection.rollback();
+        connection.release();
+        throw err;
+      }
+    } catch (err) {
+      console.error("Error updating venue:", err);
+      res.status(500).json({ error: "Failed to update venue" });
+    }
+  }
+);
+
 // GET endpoint to retrieve all venues
 app.get("/venues", async (req, res) => {
   try {

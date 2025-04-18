@@ -9,8 +9,6 @@ export default function CreateVenue({ edit }) {
   const submit = useSubmit();
   const venue = useLoaderData();
 
-  console.log(venue);
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -86,7 +84,7 @@ export default function CreateVenue({ edit }) {
       <div className="flex justify-center">
         <button
           type="submit"
-          className="bg-green-500 px-4 py-2 text-white rounded"
+          className="bg-green-500 px-4 py-2 text-white rounded cursor-pointer"
         >
           Submit
         </button>
