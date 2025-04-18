@@ -30,7 +30,7 @@ export default function AdminRegister() {
 
     if (res.ok) {
       login(data.token); // auto-login
-      navigate("/admin/venues");
+      navigate("/");
     } else {
       alert(data.message || "Failed to register admin");
     }

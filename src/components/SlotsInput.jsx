@@ -1,7 +1,18 @@
 import { useEffect, useState } from "react";
 
-export default function SlotInput({ onSlotsChange }) {
+export default function SlotInput({ onSlotsChange, availableSlots }) {
   const [slots, setSlots] = useState([{ date: "", times: [""] }]);
+
+  useEffect(() => {
+    if (availableSlots) {
+      const oldSlots = availableSlots.map((slot) => {
+        const date = new Date(slot.date);
+        const formattedSlot = date.toISOString().split("T")[0];
+        return { date: formattedSlot, times: [...slot.times] };
+      });
+      setSlots(oldSlots);
+    }
+  }, [availableSlots]);
 
   const handleSlotChange = (index, key, value) => {
     const updated = [...slots];

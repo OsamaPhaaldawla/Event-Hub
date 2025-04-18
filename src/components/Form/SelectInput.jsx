@@ -6,6 +6,7 @@ export default function SelectInput({
   placeHolder,
   name,
   error,
+  venues = false,
   ...props
 }) {
   return (
@@ -25,8 +26,11 @@ export default function SelectInput({
           </option>
           {options !== null
             ? options.map((option) => (
-                <option key={option} value={option}>
-                  {option}
+                <option
+                  key={venues ? option.id : option}
+                  value={venues ? option.id : option}
+                >
+                  {venues ? option.name : option}
                 </option>
               ))
             : []}

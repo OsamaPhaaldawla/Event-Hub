@@ -1,7 +1,7 @@
 import { useState } from "react";
 
-export default function ImageUploader() {
-  const [previews, setPreviews] = useState([]);
+export default function ImageUploader({ images }) {
+  const [previews, setPreviews] = useState(images ? images : []);
 
   function handleImageChange(event) {
     const files = Array.from(event.target.files);

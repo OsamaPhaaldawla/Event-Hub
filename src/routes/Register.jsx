@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router";
+import { Link, useNavigate } from "react-router";
 import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
@@ -31,11 +31,7 @@ export default function Register() {
 
     if (res.ok) {
       login(data.token); // auto-login
-      if (formData.role === "hoster") {
-        navigate("/host/events");
-      } else {
-        navigate("/events");
-      }
+      navigate("/");
     } else {
       alert(data.message || "Failed to register");
     }
@@ -96,6 +92,13 @@ export default function Register() {
       >
         Register
       </button>
+      <Link
+        className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-800 block text-center mt-3"
+        to="/login"
+        isActive={location.pathname === "/login"}
+      >
+        Login
+      </Link>
     </form>
   );
 }

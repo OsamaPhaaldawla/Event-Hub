@@ -2,12 +2,12 @@ import { Link, useLoaderData } from "react-router";
 import ImageGall from "../components/ImageGall";
 import AvailableSlots from "../UI/AvailableSlots";
 import { FaUsers } from "react-icons/fa";
+import { useAuth } from "../context/AuthContext";
 
 export default function VenueDetails() {
   const venue = useLoaderData();
-
-  console.log(venue);
-  const adminLoggin = window.localStorage.getItem("isLoggedIn");
+  const { user } = useAuth();
+  const adminLoggin = user?.role === "admin";
 
   return (
     <>
@@ -17,13 +17,15 @@ export default function VenueDetails() {
             <ImageGall images={venue.images} />
           </div>
           <div className="relative">
-            <Link
-              to={adminLoggin === "true" ? `edit` : "login"}
-              className="absolute right-8 top-3 border border-blue-600 rounded-lg px-2 py-1 cursor-pointer text-xl hover:bg-blue-600 hover:text-white duration-300"
-              type="button"
-            >
-              Edit
-            </Link>
+            {adminLoggin && (
+              <Link
+                to={adminLoggin ? `edit` : "login"}
+                className="absolute right-8 top-3 border border-blue-600 rounded-lg px-2 py-1 cursor-pointer text-xl hover:bg-blue-600 hover:text-white duration-300"
+                type="button"
+              >
+                Edit
+              </Link>
+            )}
             <div className="px-6 mt-6">
               <h1 className="text-3xl font-bold mt-6 mb-6">{venue.name}</h1>
               <a href={venue.url} className="text-blue-600 underline text-xl">
@@ -64,7 +66,13 @@ export default function VenueDetails() {
 }
 
 export const loader = async ({ params }) => {
-  const res = await fetch(`http://localhost:3000/venues/${params.venueId}`);
+  const token = localStorage.getItem("token");
+
+  const res = await fetch(`http://localhost:3000/venues/${params.venueId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!res.ok) {
     throw { message: "Could not fetch venue details" };

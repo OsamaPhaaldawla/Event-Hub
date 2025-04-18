@@ -6,7 +6,7 @@ export default function ImageGall({ images }) {
 
   useEffect(() => {
     if (images.length > 0) {
-      setSelectedIndex(0); // Reset to first image when images change
+      setSelectedIndex(0);
     }
   }, [images]);
 
@@ -35,7 +35,7 @@ export default function ImageGall({ images }) {
 
         <button
           onClick={handlePrevious}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-pointer"
           aria-label="Previous image"
           type="button"
         >
@@ -44,7 +44,7 @@ export default function ImageGall({ images }) {
 
         <button
           onClick={handleNext}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/50 text-white p-2 rounded-full md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-pointer"
           aria-label="Next image"
           type="button"
         >

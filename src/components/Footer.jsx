@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <>
       <div className="bg-black text-white px-5 py-3">
-        <div className="flex items-center justify-center mb-4">
+        <div className="flex flex-col md:flex-row items-center justify-center mb-4">
           <h1 className="text-2xl mr-4 font-bold text-blue-600 flex items-center cursor-pointer">
             <img
               src={logo}
@@ -16,14 +16,14 @@ export default function Footer() {
             />{" "}
             <span className="text-white">Event</span> Hub
           </h1>
-          <p className="text-gray-400 italic">
+          <p className="text-gray-400 italic text-center">
             Your one-stop event platform for organizing and attending memorable
             moments.
           </p>
         </div>
         <div className="flex-col justify-center items-center">
           <h3 className="font-semibold mb-2 text-center">Contact</h3>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col justify-center items-center gap-1 sm:flex-row sm:gap-4">
             <p>Email: eventhub@gmail.com</p>
             <p>Phone: +249 xxx xxx xxx</p>
           </div>

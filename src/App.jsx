@@ -13,13 +13,14 @@ import Error from "./routes/Error";
 import Host, { action as hostAction, editDataLoader } from "./routes/Host";
 import { loader as venuesLoader } from "./components/Form/Step2";
 import { AuthProvider } from "./context/AuthContext";
-import CreateVenue, { action as createVenueAction } from "./routes/CreateVenue";
+import CreateVenue, { action as VenueFormAction } from "./routes/CreateVenue";
 import Venues from "./routes/Venues";
 import VenueDetails, {
   loader as venueDetailsLoader,
 } from "./routes/VenueDetails";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Register from "./routes/Register";
+import MyEvents, { loader as MyEventsLoader } from "./routes/MyEvents";
 
 const router = createBrowserRouter([
   {
@@ -62,17 +63,8 @@ const router = createBrowserRouter([
         loader: editDataLoader,
         action: hostAction,
       },
-      // {
-      //   path: "/events/:eventId/login",
-      //   element: <Login header="Event Login" key="edit-login" />,
-      //   loader: eventDetailsLoader,
-      // },
-      // {
-      //   path: "/admin",
-      //   element: <Login header="Admin Login" key="admin-login" />,
-      // },
       {
-        path: "/admin-register",
+        path: "/admin",
         element: <AdminRegister />,
       },
       {
@@ -90,21 +82,36 @@ const router = createBrowserRouter([
       },
       {
         path: "/venues/:venueId",
-        element: (
-          <ProtectedRoute roles={["admin", "hoster"]}>
-            <VenueDetails />
-          </ProtectedRoute>
-        ),
+        element: <VenueDetails />,
         loader: venueDetailsLoader,
       },
       {
-        path: "/venues/new",
+        path: "/venues/:venueId/edit",
         element: (
           <ProtectedRoute roles={["admin"]}>
-            <CreateVenue />
+            <CreateVenue edit key={"edit-venue"} />
           </ProtectedRoute>
         ),
-        action: createVenueAction,
+        loader: venueDetailsLoader,
+        action: VenueFormAction,
+      },
+      {
+        path: "/create_venue",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <CreateVenue key={"create-venue"} />
+          </ProtectedRoute>
+        ),
+        action: VenueFormAction,
+      },
+      {
+        path: "/hoster/events",
+        element: (
+          <ProtectedRoute roles={["hoster"]}>
+            <MyEvents />
+          </ProtectedRoute>
+        ),
+        loader: MyEventsLoader,
       },
     ],
   },

@@ -1,16 +1,40 @@
 import { useRef, useState } from "react";
-import { Form, redirect, useLoaderData, useSubmit } from "react-router";
+import {
+  Form,
+  redirect,
+  useLoaderData,
+  useNavigate,
+  useSubmit,
+} from "react-router";
 import Step1 from "../components/Form/Step1";
 import FormProgress from "../components/Form/FormProgress";
 import Step2 from "../components/Form/Step2";
 import Step3 from "../components/Form/Step3";
+import { useAuth } from "../context/AuthContext";
 
 export default function Host({ edit }) {
   const [activeStep, setActiveStep] = useState(1);
+  const [venueName, setVenueName] = useState("");
+
   let data = useLoaderData();
   let event = data.eventData;
   const submit = useSubmit();
+  const navigate = useNavigate();
+  const { user } = useAuth();
   const form = useRef();
+
+  // Check if the user is admin or own the event else redirect him to login
+  if (edit) {
+    if (!user) {
+      navigate("/login");
+    } else if (user.userId !== event.hoster.id && user.role !== "admin") {
+      return (
+        <p className="text-center mt-4 text-2xl text-red-500">
+          You are not Autherized to edit this event
+        </p>
+      );
+    }
+  }
 
   const nextStep = () => setActiveStep((prev) => prev + 1);
   const prevStep = () => setActiveStep((prev) => prev - 1);
@@ -36,10 +60,9 @@ export default function Host({ edit }) {
               encType="multipart/form-data"
               method={edit ? "PUT" : "POST"}
               className="max-w-[92%] mx-auto"
-              //? working without it onSubmit={handleSubmit}
             >
               <div className={activeStep === 1 ? "block" : "hidden"}>
-                <Step1 oldData={edit && event} next={nextStep} />
+                <Step1 oldData={edit && event} next={nextStep} edit={edit} />
               </div>
 
               <div className={activeStep === 2 ? "block" : "hidden"}>
@@ -48,6 +71,7 @@ export default function Host({ edit }) {
                   prev={prevStep}
                   oldData={edit && event}
                   edit={edit}
+                  setVenueName={setVenueName}
                 />
               </div>
 
@@ -56,6 +80,9 @@ export default function Host({ edit }) {
                   oldData={edit && event}
                   prev={prevStep}
                   handleSubmit={handleSubmit}
+                  formRef={form}
+                  venueName={venueName}
+                  edit={edit}
                 />
               </div>
             </Form>
@@ -99,15 +126,28 @@ export const action = async ({ request, params }) => {
 
   // Copy all fields (including files)
   for (let [key, value] of formData.entries()) {
-    fetchFormData.append(key, value);
+    if (value instanceof File) {
+      // Only append if a new file is selected
+      if (value.name && value.size > 0) {
+        fetchFormData.append(key, value);
+      }
+    } else {
+      fetchFormData.append(key, value);
+    }
   }
+
+  const token = localStorage.getItem("token");
+  fetchFormData.append("hosterId", token.userId);
 
   try {
     const response = await fetch(
       `http://localhost:3000/events/${params.eventId || ""}`,
       {
         method: request.method,
-        body: fetchFormData, // Use reconstructed FormData
+        body: fetchFormData,
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
       }
     );
 

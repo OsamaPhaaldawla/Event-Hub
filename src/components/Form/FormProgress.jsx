@@ -24,7 +24,7 @@ export default function FormProgress({ activeStep }) {
         step="3"
         active={activeStep === 3}
       >
-        Host Information
+        Review Event Data
       </FormStep>
     </div>
   );

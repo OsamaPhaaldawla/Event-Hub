@@ -6,7 +6,7 @@ export function validateStep1(formData) {
     accessType: formData.accessType,
     seats: formData.seats,
     price: formData.price,
-    image: formData.image,
+    image: formData.image ?? null,
     description: formData.description,
   };
   formData = step1Data;
@@ -36,8 +36,10 @@ export function validateStep1(formData) {
     !formData.seats
   ) {
     errors.seats = "Seats number is required.";
-  } else if (formData.seats < 40) {
-    errors.seats = "Seats should be more than 40";
+  }
+
+  if (formData.image !== null && formData.image.name === "") {
+    errors.image = "Image is required";
   }
 
   if (formData.accessType === "paid" && !formData.price) {

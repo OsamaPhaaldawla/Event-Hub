@@ -1,96 +1,198 @@
-import { useState } from "react";
-import Input from "./Input";
-import { validateStep3 } from "./Validatioin";
+// import { useState } from "react";
+// import { validateStep3 } from "./Validatioin";
+import { ClipboardList, ImageDown, MapPin } from "lucide-react";
 
-export default function Step3({ prev, oldData, handleSubmit }) {
-  const [errors, setErrors] = useState({});
+export default function Step3({
+  prev,
+  handleSubmit,
+  formRef,
+  venueName,
+  oldData,
+  edit,
+}) {
+  //? an old step3 prop oldData,
+  // const [errors, setErrors] = useState({});
 
-  function onSubmit(e) {
-    e.preventDefault();
-    const formData = new FormData(document.querySelector("form"));
+  const data = new FormData(formRef.current);
+  const formData = Object.fromEntries(data.entries());
 
-    const validationData = Object.fromEntries(formData.entries());
-    const { validationErrors } = validateStep3(validationData);
+  //* old Third Step validation and submition
+  // function onSubmit(e) {
+  //   e.preventDefault();
+  //   const formData = new FormData(formRef.current);
+  //   const validationData = Object.fromEntries(formData.entries());
+  //   console.log(validationData);
+  //   const { validationErrors } = validateStep3(validationData);
 
-    if (validationErrors) {
-      setErrors({ ...validationErrors });
-    } else {
-      handleSubmit();
-    }
-  }
+  //   if (validationErrors) {
+  //     setErrors({ ...validationErrors });
+  //   } else {
+  //   handleSubmit();
+  //   }
+  // }
 
   return (
-    <>
-      <h2 className="text-xl mb-2 font-bold">Host Information:</h2>
-      <p className="text-gray-600 mb-4">Required fields *</p>
-      <Input
-        name="hosterName"
-        label="Name:"
-        placeholder="Enter your Name"
-        required
-        error={errors.hosterName}
-        defaultValue={oldData ? oldData.hosterName : ""}
-      />
-      <Input
-        name="hosterEmail"
-        type="email"
-        label="Email:"
-        placeholder="name@example.com"
-        required
-        error={errors.hosterEmail}
-        defaultValue={oldData ? oldData.hosterEmail : ""}
-      />
-      <div className="flex">
-        <div className="flex-1">
-          <Input
-            name="hosterPassword"
-            label={
-              <div className="flex items-center mb-1 mt-3">
-                Write a password
-                <div className="group relative ml-2">
-                  <span className="cursor-pointer bg-blue-600 text-white px-2 py-1 rounded w-10 h-8">
-                    ?
-                  </span>
-                  <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-50 p-2 bg-gray-800 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                    You will need the Email & Password if you want to edit the
-                    event later.
-                  </div>
-                </div>
-              </div>
-            }
-            placeholder="***********"
-            type="password"
-            error={errors.hosterPassword}
-            defaultValue={oldData ? oldData.hosterPassword : ""}
-          />
-        </div>
+    <div className="space-y-6 mb-12">
+      {/* 1. Event Details */}
+      <div className="border p-4 rounded-2xl shadow-md">
+        <h2 className="text-xl font-bold mb-2 flex items-center">
+          <ClipboardList size={26} className="text-gray-600 mr-1" />
+          Event Details
+        </h2>
+        <p>
+          <strong>Title:</strong> {formData.title}
+        </p>
+        {formData.subtitle && (
+          <p>
+            <strong>Subtitle:</strong> {formData.subtitle}
+          </p>
+        )}
+        <p>
+          <strong>Type:</strong> {formData.type}
+        </p>
+        <p>
+          <strong>Access Type:</strong> {formData.accessType}
+        </p>
+
+        {(formData.accessType === "free-limited" ||
+          formData.accessType === "paid") && (
+          <p>
+            <strong>Available Seats:</strong> {formData.seats}
+          </p>
+        )}
+
+        {formData.accessType === "paid" && (
+          <p>
+            <strong>Price:</strong> ${formData.price}
+          </p>
+        )}
+
+        <p className="mt-2">
+          <strong>Description:</strong> {formData.description}
+        </p>
       </div>
-      <Input
-        as="textarea"
-        name="hosterDescription"
-        label="Description"
-        placeholder="Write about your self"
-        className="resize-none"
-        rows="3"
-        defaultValue={oldData ? oldData.hosterDescription : ""}
-      />
-      <div className="mt-10 flex justify-between mb-3">
+
+      {/* 2. Image Preview */}
+      {formData.image && (
+        <div className="border p-4 rounded-2xl shadow-md">
+          <h2 className="text-xl font-bold mb-2 flex items-center">
+            <ImageDown size={26} className="text-gray-600 mr-1" />
+            Event Image
+          </h2>
+          <div className="lg:w-4/5 mx-auto">
+            <img
+              src={
+                edit ? oldData.image.url : URL.createObjectURL(formData.image)
+              }
+              alt="Event"
+              className="w-full h-44 lg:h-80 object-cover rounded-lg my-2"
+            />
+          </div>
+        </div>
+      )}
+
+      {/* 3. Venue Selection */}
+      <div className="border p-4 rounded-2xl shadow-md">
+        <h2 className="text-xl font-bold mb-2 flex items-center">
+          <MapPin size={24} className="text-gray-600 mr-1" />
+          Venue Selection
+        </h2>
+        <p>
+          <strong>Venue:</strong> {venueName}
+        </p>
+        <p>
+          <strong> Date:</strong> {formData.date}
+        </p>
+        <p>
+          <strong>Time:</strong> {formData.time}
+        </p>
+      </div>
+
+      {/* 4. Action Buttons */}
+      <div className="flex justify-between mt-6">
         <button
           type="button"
           onClick={prev}
-          className="bg-gray-500 px-4 py-2 text-white rounded"
+          className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg cursor-pointer"
         >
-          Back
+          ← Edit
         </button>
 
         <button
-          type="submit"
-          className="bg-green-500 px-4 py-2 text-white rounded"
-          onClick={onSubmit}
+          type="button"
+          onClick={handleSubmit}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg cursor-pointer"
         >
-          Submit
+          ✅ Submit Event
         </button>
       </div>
-    </>
+    </div>
   );
 }
+
+//   return (
+//     <div className="space-y-4">
+//       {/* Event Details */}
+//       <div className="p-4 rounded-2xl shadow">
+//         <h2 className="text-xl font-semibold mb-2">📅 Event Details</h2>
+//         <p>
+//           <strong>Title:</strong> {formData.title}
+//         </p>
+//         {formData.subtitle && (
+//           <p>
+//             <strong>Subtitle:</strong> {formData.subtitle}
+//           </p>
+//         )}
+//         <p>
+//           <strong>Price:</strong> ${formData.price}
+//         </p>
+//         <p>
+//           <strong>Description:</strong> {formData.description}
+//         </p>
+//       </div>
+
+//       {/* Venue Info */}
+//       <div className="p-4 rounded-2xl shadow">
+//         <h2 className="text-xl font-semibold mb-2">🏛️ Venue Info</h2>
+//         <p>
+//           <strong>Venue:</strong> {formData.venueName}
+//         </p>
+//         <p>
+//           <strong>Date:</strong> {formData.date}
+//         </p>
+//         <p>
+//           <strong>Time:</strong> {formData.time}
+//         </p>
+//       </div>
+
+//       {/* Image Preview */}
+//       {formData.image && (
+//         <div className="p-4 rounded-2xl shadow">
+//           <h2 className="text-xl font-semibold mb-2">🖼️ Event Image</h2>
+//           <img
+//             src={URL.createObjectURL(formData.image)}
+//             alt="Event"
+//             className="rounded-xl h-40 object-cover"
+//           />
+//         </div>
+//       )}
+//       <div className="mt-10 flex justify-between mb-3">
+//         <button
+//           type="button"
+//           onClick={prev}
+//           className="bg-gray-500 px-4 py-2 text-white rounded cursor-pointer hover:bg-gray-700"
+//         >
+//           ← Edit
+//         </button>
+
+//         <button
+//           type="button"
+//           className="bg-green-500 px-4 py-2 text-white rounded cursor-pointer hover:bg-green-600"
+//           onClick={handleSubmit}
+//         >
+//           Confirm and submit 👍
+//         </button>
+//       </div>
+//     </div>
+//   );
+// }

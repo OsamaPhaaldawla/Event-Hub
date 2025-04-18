@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Form, redirect, useSubmit } from "react-router";
+import { Form, redirect, useLoaderData, useSubmit } from "react-router";
 import Input from "../components/Form/Input";
 import SlotsInput from "../components/SlotsInput";
 import ImageUploader from "../components/ImageUploader";
@@ -7,6 +7,9 @@ import ImageUploader from "../components/ImageUploader";
 export default function CreateVenue({ edit }) {
   const [slots, setSlots] = useState([]);
   const submit = useSubmit();
+  const venue = useLoaderData();
+
+  console.log(venue);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -28,15 +31,33 @@ export default function CreateVenue({ edit }) {
     >
       <h2 className="text-2xl font-bold text-center">Create Venue</h2>
 
-      <Input name="name" placeholder="Name" required label="Venue Name" />
-      <Input name="location" placeholder="Location" required label="Location" />
-      <Input name="url" placeholder="Google Maps URL" label="URL" />
+      <Input
+        name="name"
+        placeholder="Name"
+        required
+        label="Venue Name"
+        defaultValue={edit ? venue.name : ""}
+      />
+      <Input
+        name="location"
+        placeholder="Location"
+        required
+        label="Location"
+        defaultValue={edit ? venue.location : ""}
+      />
+      <Input
+        name="url"
+        placeholder="Google Maps URL"
+        label="URL"
+        defaultValue={edit ? venue.url : ""}
+      />
       <Input
         type="number"
         name="capacity"
         placeholder="Capacity"
         required
         label="Capacity"
+        defaultValue={edit ? venue.capacity : ""}
       />
       <Input
         type="number"
@@ -44,6 +65,7 @@ export default function CreateVenue({ edit }) {
         placeholder="Price"
         required
         label="Price per hour"
+        defaultValue={edit ? venue.price : ""}
       />
       <Input
         as="textarea"
@@ -51,10 +73,15 @@ export default function CreateVenue({ edit }) {
         placeholder="Description"
         required
         label="Venue Description"
+        defaultValue={edit ? venue.description : ""}
+        rows={4}
       />
 
-      <SlotsInput onSlotsChange={setSlots} />
-      <ImageUploader />
+      <SlotsInput
+        onSlotsChange={setSlots}
+        availableSlots={edit ? venue.availableSlots : null}
+      />
+      <ImageUploader images={edit ? venue.images : null} />
 
       <div className="flex justify-center">
         <button
@@ -69,6 +96,7 @@ export default function CreateVenue({ edit }) {
 }
 
 export const action = async ({ request, params }) => {
+  const token = localStorage.getItem("token");
   const data = await request.formData();
 
   // Collect the images from the form
@@ -101,6 +129,9 @@ export const action = async ({ request, params }) => {
     `http://localhost:3000/venues${params.venueId ? "/" + params.venueId : ""}`,
     {
       method: request.method, // "POST" or "PUT" depending on the method
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
       body: formData,
     }
   );

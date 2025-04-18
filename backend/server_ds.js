@@ -76,9 +76,13 @@ app.post("/auth/register", async (req, res) => {
 
 const jwt = require("jsonwebtoken");
 
+// new Middleware
 function authMiddleware(requiredRoles = []) {
   return (req, res, next) => {
-    const token = req.cookies.token;
+    // Get token from Authorization header
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(" ")[1]; // Expecting: "Bearer <token>"
+
     if (!token) return res.status(401).json({ error: "Unauthorized" });
 
     try {
@@ -101,37 +105,65 @@ function authMiddleware(requiredRoles = []) {
 
 // REGISTER ENDPOINT (for admin only)
 app.post("/register-admin", async (req, res) => {
+  const connection = await pool.getConnection(); // ✅ Get connection from pool
   try {
     const { name, email, password, adminSecret } = req.body;
 
     if (adminSecret !== process.env.ADMIN_SECRET) {
+      connection.release();
       return res
         .status(403)
         .json({ message: "Not authorized to register admin" });
     }
 
-    const [existing] = await db.query("SELECT * FROM users WHERE email = ?", [
-      email,
-    ]);
+    const [existing] = await connection.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
     if (existing.length > 0) {
+      connection.release();
       return res.status(400).json({ message: "Email already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    await db.query(
+    await connection.query(
       "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
       [name, email, hashedPassword, "admin"]
     );
 
-    res.status(201).json({ message: "Admin registered successfully" });
+    const [rows] = await connection.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email]
+    );
+    const admin = rows[0];
+
+    const token = jwt.sign(
+      { id: admin.id, email: admin.email, role: admin.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    connection.release(); // ✅ Don't forget to release!
+
+    res.status(201).json({
+      message: "Admin registered successfully",
+      token,
+      user: {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+      },
+    });
   } catch (err) {
+    connection.release();
     console.error("Admin registration error:", err.message);
     res.status(500).json({ message: "Server error" });
   }
 });
 
-// REGISTER ENDPOINT (for hoster and user only) //? Chat Gpt
+// REGISTER ENDPOINT (for hoster and user)
 app.post("/register", async (req, res) => {
   const connection = await pool.getConnection(); // ✅ Get a connection from the pool
 
@@ -166,25 +198,19 @@ app.post("/register", async (req, res) => {
     const user = rows[0];
 
     const token = jwt.sign(
-      { id: user.id, email: user.email, role: user.role },
+      { userId: user.id, role: user.role, name: user.name },
       process.env.JWT_SECRET,
       { expiresIn: "7d" }
     );
 
-    connection.release(); // ✅ Release connection when done
+    connection.release();
 
     res.status(201).json({
       message: "User registered",
       token,
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
     });
   } catch (err) {
-    connection.release(); // ✅ Ensure it's released even on error
+    connection.release();
     console.error("Register error:", err.message);
     res.status(500).json({ message: "Something went wrong!" });
   }
@@ -205,7 +231,7 @@ app.post("/login", async (req, res) => {
 
     // Create JWT
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { userId: user.id, role: user.role, name: user.name },
       process.env.JWT_SECRET || "supersecretkey",
       { expiresIn: "7d" }
     );
@@ -213,7 +239,6 @@ app.post("/login", async (req, res) => {
     res.json({
       message: "Logged in successfully",
       token,
-      user: { id: user.id, name: user.name, role: user.role },
     });
   } catch (err) {
     console.error(err);
@@ -221,6 +246,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// Logout
 app.post("/logout", (req, res) => {
   res.clearCookie("token").json({ message: "Logged out successfully" });
 });
@@ -342,57 +368,53 @@ app.get("/venues", async (req, res) => {
 });
 
 // GET endpoint for full venue details
-app.get(
-  "/venues/:id",
-  authMiddleware(["admin", "hoster"]),
-  async (req, res) => {
-    try {
-      const [venues] = await pool.query("SELECT * FROM venues WHERE id = ?", [
-        req.params.id,
-      ]);
+app.get("/venues/:id", async (req, res) => {
+  try {
+    const [venues] = await pool.query("SELECT * FROM venues WHERE id = ?", [
+      req.params.id,
+    ]);
 
-      if (venues.length === 0) {
-        return res.status(404).json({ error: "Venue not found" });
-      }
-
-      const venue = venues[0];
-
-      // Get available slots
-      const [slots] = await pool.query(
-        'SELECT date, TIME_FORMAT(time, "%H:%i") as time FROM available_slots WHERE venue_id = ? ORDER BY date, time',
-        [venue.id]
-      );
-
-      // Group slots by date
-      const groupedSlots = {};
-      slots.forEach((slot) => {
-        if (!groupedSlots[slot.date]) {
-          groupedSlots[slot.date] = [];
-        }
-        groupedSlots[slot.date].push(slot.time);
-      });
-
-      venue.availableSlots = Object.keys(groupedSlots).map((date) => ({
-        date,
-        times: groupedSlots[date],
-      }));
-
-      // Get all images
-      const [images] = await pool.query(
-        "SELECT image_path FROM venue_images WHERE venue_id = ?",
-        [venue.id]
-      );
-      venue.images = images.map((img) => ({
-        url: `${req.protocol}://${req.get("host")}/uploads/${img.image_path}`,
-      }));
-
-      res.json(venue);
-    } catch (error) {
-      console.error("Error fetching venue details:", error);
-      res.status(500).json({ error: "Failed to fetch venue details" });
+    if (venues.length === 0) {
+      return res.status(404).json({ error: "Venue not found" });
     }
+
+    const venue = venues[0];
+
+    // Get available slots
+    const [slots] = await pool.query(
+      'SELECT date, TIME_FORMAT(time, "%H:%i") as time FROM available_slots WHERE venue_id = ? ORDER BY date, time',
+      [venue.id]
+    );
+
+    // Group slots by date
+    const groupedSlots = {};
+    slots.forEach((slot) => {
+      if (!groupedSlots[slot.date]) {
+        groupedSlots[slot.date] = [];
+      }
+      groupedSlots[slot.date].push(slot.time);
+    });
+
+    venue.availableSlots = Object.keys(groupedSlots).map((date) => ({
+      date,
+      times: groupedSlots[date],
+    }));
+
+    // Get all images
+    const [images] = await pool.query(
+      "SELECT image_path FROM venue_images WHERE venue_id = ?",
+      [venue.id]
+    );
+    venue.images = images.map((img) => ({
+      url: `${req.protocol}://${req.get("host")}/uploads/${img.image_path}`,
+    }));
+
+    res.json(venue);
+  } catch (error) {
+    console.error("Error fetching venue details:", error);
+    res.status(500).json({ error: "Failed to fetch venue details" });
   }
-);
+});
 
 // POST endpoint to create a new event with single image
 app.post(
@@ -409,14 +431,10 @@ app.post(
         accessType,
         seats,
         description,
-        venueName,
+        venueId,
         date,
         time,
         price,
-        hosterName,
-        hosterEmail,
-        hosterPassword,
-        hosterDescription,
       } = req.body;
 
       // Start transaction
@@ -427,9 +445,9 @@ app.post(
         // Insert event with image path
         const [eventResult] = await connection.query(
           `INSERT INTO events (
-            title, subtitle, type, access_type, seats, price, description,
-            image_path, venue_name, date, time
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    title, subtitle, type, access_type, seats, price, description,
+    image_path, venue_id, hoster_id, date, time
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             title,
             subtitle,
@@ -439,20 +457,13 @@ app.post(
             price ? parseFloat(price) : 0.0,
             description,
             req.file ? req.file.filename : null,
-            venueName,
+            venueId,
+            req.user.userId,
             date,
             time,
           ]
         );
         const eventId = eventResult.insertId;
-
-        // Insert hoster information
-        await connection.query(
-          `INSERT INTO event_hosters (
-            event_id, name, email, password, description
-          ) VALUES (?, ?, ?, ?, ?)`,
-          [eventId, hosterName, hosterEmail, hosterPassword, hosterDescription]
-        );
 
         await connection.commit();
         connection.release();
@@ -473,27 +484,120 @@ app.post(
   }
 );
 
+// PUT endpoint to update an existing event
+app.put(
+  "/events/:eventId",
+  authMiddleware(["admin", "hoster"]),
+  upload.single("image"),
+  async (req, res) => {
+    const { eventId } = req.params;
+    let {
+      title,
+      subtitle,
+      type,
+      accessType,
+      seats,
+      price,
+      description,
+      venueId,
+      date,
+      time,
+    } = req.body;
+    date = date?.split("T")[0]; // Keep only the calendar date (YYYY-MM-DD)
+    try {
+      const connection = await pool.getConnection();
+      await connection.beginTransaction();
+
+      try {
+        // 🔍 Get the current event first to check ownership + existing image
+        const [existingRows] = await connection.query(
+          `SELECT * FROM events WHERE id = ?`,
+          [eventId]
+        );
+
+        if (existingRows.length === 0) {
+          connection.release();
+          return res.status(404).json({ error: "Event not found" });
+        }
+
+        const existingEvent = existingRows[0];
+
+        // 🔐 Check that the hoster owns this event (if not admin)
+        if (
+          req.user.role === "hoster" &&
+          existingEvent.hoster_id !== req.user.userId
+        ) {
+          connection.release();
+          return res
+            .status(403)
+            .json({ error: "You are not allowed to edit this event" });
+        }
+
+        // 🧠 Decide which image path to use
+        const imagePath = req.file
+          ? req.file.filename // New image
+          : existingEvent.image_path; // Keep the old one
+
+        // 🛠 Update the event
+        await connection.query(
+          `UPDATE events SET
+            title = ?, subtitle = ?, type = ?, access_type = ?, seats = ?, price = ?,
+            description = ?, image_path = ?, venue_id = ?, date = ?, time = ?
+          WHERE id = ?`,
+          [
+            title,
+            subtitle,
+            type,
+            accessType,
+            seats,
+            price ? parseFloat(price) : 0.0,
+            description,
+            imagePath,
+            venueId,
+            date,
+            time,
+            eventId,
+          ]
+        );
+
+        await connection.commit();
+        connection.release();
+
+        res.status(200).json({ message: "Event updated successfully" });
+      } catch (err) {
+        await connection.rollback();
+        connection.release();
+        throw err;
+      }
+    } catch (err) {
+      console.error("Error updating event:", err);
+      res.status(500).json({ error: "Failed to update event" });
+    }
+  }
+);
+
 // GET endpoint to retrieve all events (simplified view)
 app.get("/events", async (req, res) => {
   try {
     const [events] = await pool.query(`
-        SELECT 
-          e.id,
-          e.title,
-          e.subtitle,
-          e.price,
-          e.type,
-          e.description,
-          e.access_type as accessType,
-          e.venue_name as venueName,
-          e.date,
-          TIME_FORMAT(e.time, "%H:%i") as time,
-          e.image_path as image
-        FROM events e
-        ORDER BY e.date, e.time
-      `);
+      SELECT 
+        e.id,
+        e.title,
+        e.subtitle,
+        e.price,
+        e.type,
+        e.description,
+        e.access_type as accessType,
+        v.name as venueName,
+        v.location as venueLocation,
+        DATE_FORMAT(e.date, '%Y-%m-%d') as date,
+        TIME_FORMAT(e.time, "%H:%i") as time,
+        e.image_path as image
+      FROM events e
+      JOIN venues v ON e.venue_id = v.id
+      ORDER BY e.date, e.time
+    `);
 
-    // Format the response with image URLs
     const formattedEvents = events.map((event) => ({
       id: event.id,
       title: event.title,
@@ -503,12 +607,14 @@ app.get("/events", async (req, res) => {
       accessType: event.accessType,
       description: event.description,
       venueName: event.venueName,
+      venueLocation: event.venueLocation,
       date: event.date,
       time: event.time,
       image: event.image
         ? `${req.protocol}://${req.get("host")}/uploads/${event.image}`
         : null,
     }));
+    // events.date = date?.split("T")[0]; // Keep only the calendar date (YYYY-MM-DD)
 
     res.json(formattedEvents);
   } catch (error) {
@@ -520,24 +626,31 @@ app.get("/events", async (req, res) => {
 // GET endpoint to retrieve a single event with all details
 app.get("/events/:id", async (req, res) => {
   try {
-    // Get basic event info
     const [events] = await pool.query(
       `
-        SELECT 
-          id,
-          title,
-          subtitle,
-          price,
-          type,
-          access_type as accessType,
-          seats,
-          description,
-          image_path as image,
-          venue_name as venueName,
-          date,
-          TIME_FORMAT(time, "%H:%i") as time
-        FROM events
-        WHERE id = ?
+      SELECT 
+        e.id,
+        e.title,
+        e.subtitle,
+        e.price,
+        e.type,
+        e.access_type as accessType,
+        e.seats,
+        e.description,
+        e.image_path as image,
+        v.id as venueId,
+        v.name as venueName,
+        v.location as venueLocation,
+        v.capacity as venueCapacity,
+        DATE_FORMAT(e.date, '%Y-%m-%d') as date,
+        TIME_FORMAT(e.time, "%H:%i") as time,
+        u.name as hosterName,
+        u.email as hosterEmail,
+        e.hoster_id as hosterId
+      FROM events e
+      JOIN venues v ON e.venue_id = v.id
+      JOIN users u ON e.hoster_id = u.id
+      WHERE e.id = ?
       `,
       [req.params.id]
     );
@@ -548,34 +661,87 @@ app.get("/events/:id", async (req, res) => {
 
     const event = events[0];
 
-    // Add full image URL if exists
-    if (event.image) {
-      event.image = {
-        url: `${req.protocol}://${req.get("host")}/uploads/${event.image}`,
-      };
-    } else {
-      event.image = null;
-    }
+    event.image = event.image
+      ? { url: `${req.protocol}://${req.get("host")}/uploads/${event.image}` }
+      : null;
 
-    // Get hoster information
-    const [hosters] = await pool.query(
-      `SELECT 
-          name as hosterName,
-          email as hosterEmail,
-          description as hosterDescription
-         FROM event_hosters
-         WHERE event_id = ?`,
-      [event.id]
-    );
+    event.venue = {
+      id: event.venueId,
+      name: event.venueName,
+      location: event.venueLocation,
+      capacity: event.venueCapacity,
+    };
 
-    if (hosters.length > 0) {
-      event.hoster = hosters[0];
-    }
+    event.hoster = {
+      id: event.hosterId,
+      name: event.hosterName,
+      email: event.hosterEmail,
+    };
+
+    // Clean up extra fields if needed
+    delete event.venueName;
+    delete event.venueLocation;
+    delete event.venueCapacity;
+    delete event.hosterName;
+    delete event.hosterEmail;
+    delete event.venueId;
 
     res.json(event);
   } catch (error) {
     console.error("Error fetching event details:", error);
     res.status(500).json({ error: "Failed to fetch event details" });
+  }
+});
+
+// GET endpoint to retrieve event for a specific hoster
+app.get("/events/hoster/:id", authMiddleware(["hoster"]), async (req, res) => {
+  const hosterId = req.params.id;
+
+  try {
+    const [events] = await pool.query(
+      `
+      SELECT 
+        e.id,
+        e.title,
+        e.subtitle,
+        e.price,
+        e.type,
+        e.description,
+        e.access_type as accessType,
+        v.name as venueName,
+        v.location as venueLocation,
+        DATE_FORMAT(e.date, '%Y-%m-%d') as date,
+        TIME_FORMAT(e.time, "%H:%i") as time,
+        e.image_path as image
+      FROM events e
+      JOIN venues v ON e.venue_id = v.id
+      WHERE e.hoster_id = ?
+      ORDER BY e.date, e.time
+    `,
+      [hosterId]
+    );
+
+    const formattedEvents = events.map((event) => ({
+      id: event.id,
+      title: event.title,
+      subtitle: event.subtitle,
+      price: event.price,
+      type: event.type,
+      accessType: event.accessType,
+      description: event.description,
+      venueName: event.venueName,
+      venueLocation: event.venueLocation,
+      date: event.date,
+      time: event.time,
+      image: event.image
+        ? `${req.protocol}://${req.get("host")}/uploads/${event.image}`
+        : null,
+    }));
+
+    res.json(formattedEvents);
+  } catch (error) {
+    console.error("Error fetching hoster events:", error);
+    res.status(500).json({ error: "Failed to fetch hoster events" });
   }
 });
 

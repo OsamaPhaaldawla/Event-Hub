@@ -4,12 +4,12 @@ import Input from "./Input";
 import SelectInput from "./SelectInput";
 import { validateStep1 } from "./Validatioin";
 
-export default function Step1({ next, oldData }) {
+export default function Step1({ next, oldData, edit = false }) {
   const [accessType, setAccessType] = useState(
-    oldData ? oldData.accessType : null
+    edit ? oldData.accessType : null
   );
   const [errors, setErrors] = useState({});
-  const [preview, setPreview] = useState(null);
+  const [preview, setPreview] = useState(edit ? oldData.image.url : null);
 
   function handleImageChange(event) {
     const file = event.target.files[0];
@@ -23,6 +23,8 @@ export default function Step1({ next, oldData }) {
     const fd = new FormData(document.querySelector("form"));
     const data = Object.fromEntries(fd.entries());
 
+    if (edit && data.image.size === 0) delete data.image;
+
     const { validationErrors } = validateStep1(data);
     if (validationErrors) {
       setErrors({ ...validationErrors });
@@ -32,7 +34,7 @@ export default function Step1({ next, oldData }) {
   }
 
   return (
-    <div id="step-1">
+    <div className="mb-12">
       <h2 className="text-xl mb-2 font-bold">Event Information:</h2>
       <p className="text-gray-600 mb-4">Required fields *</p>
       <Input
@@ -41,14 +43,14 @@ export default function Step1({ next, oldData }) {
         type="text"
         required
         error={errors.title}
-        defaultValue={oldData ? oldData.title : ""}
+        defaultValue={edit ? oldData.title : ""}
       />
       <Input
         name="subtitle"
         label="Event Subtitle"
         type="text"
         error={errors.subtitle}
-        defaultValue={oldData ? oldData.subtitle : ""}
+        defaultValue={edit ? oldData.subtitle : ""}
       />
       <div className="flex justify-between gap-4">
         <div className="w-1/2 mb-3">
@@ -58,7 +60,7 @@ export default function Step1({ next, oldData }) {
             placeHolder="Your Event Type"
             name="type"
             error={errors.type}
-            defaultValue={oldData ? oldData.type : ""}
+            defaultValue={edit ? oldData.type : ""}
           />
         </div>
         <div className="w-1/2 mb-3">
@@ -69,7 +71,7 @@ export default function Step1({ next, oldData }) {
             onChange={(e) => setAccessType(e.target.value)}
             name="accessType"
             error={errors.accessType}
-            defaultValue={oldData ? oldData.accessType : ""}
+            defaultValue={edit ? oldData.accessType : ""}
           />
         </div>
       </div>
@@ -84,7 +86,7 @@ export default function Step1({ next, oldData }) {
               className="w-1/2"
               placeholder="0"
               error={errors.seats}
-              defaultValue={oldData ? oldData.seats : ""}
+              defaultValue={edit ? oldData.seats : ""}
             />
           </div>
         )}
@@ -98,7 +100,7 @@ export default function Step1({ next, oldData }) {
               className="w-1/2"
               placeholder="0"
               error={errors.price}
-              defaultValue={oldData ? oldData.price : ""}
+              defaultValue={edit ? oldData.price : ""}
             />
           </div>
         )}
@@ -108,8 +110,10 @@ export default function Step1({ next, oldData }) {
           name="image"
           type="file"
           label="Event Image"
+          required={!edit}
           className="w-1/2 bg-green-200 cursor-pointer border-none mb-2"
           onChange={handleImageChange}
+          error={errors.image}
         />
         {preview && (
           <img className="mb-3" width={120} src={preview} alt="Preview" />
@@ -124,14 +128,14 @@ export default function Step1({ next, oldData }) {
           className="resize-none"
           rows="3"
           error={errors.description}
-          defaultValue={oldData ? oldData.description : ""}
+          defaultValue={edit ? oldData.description : ""}
         />
       </div>
-      <div className="mt-10 mb-3">
+      <div className="mt-6 mb-3">
         <button
           type="button"
           onClick={handleClick}
-          className="bg-blue-500 px-4 py-2 text-white rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg cursor-pointer"
         >
           Next
         </button>

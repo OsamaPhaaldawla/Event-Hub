@@ -6,53 +6,56 @@ import Button from "../UI/Button";
 // import { IoIosTime } from "react-icons/io";
 import { IoPerson } from "react-icons/io5";
 import { formatDate } from "../constants";
+import { useAuth } from "../context/AuthContext";
 export default function EventDetails() {
   const event = useLoaderData();
-  const adminLoggin = window.localStorage.getItem("isLoggedIn");
-
-  console.log(event);
+  const { user } = useAuth();
 
   return (
     <>
       {event ? (
         <div className="container mx-auto px-4 py-10">
-          <div className="flex justify-between items-center relative">
-            <Link
-              to={adminLoggin === "true" ? `edit` : "login"}
-              className="absolute left-0 top-3 border border-blue-600 rounded-lg px-2 py-1 cursor-pointer text-xl hover:bg-blue-600 hover:text-white duration-300"
-              type="button"
-            >
-              Edit
-            </Link>
-            <div className="flex flex-col w-1/2 items-center ">
-              <h1 className="text-5xl font-bold mb-2">{event.title}</h1>
+          <div className="flex flex-col-reverse md:flex-row justify-between items-center relative">
+            {user &&
+              (user.userId === event.hoster.id || user.role === "admin") && (
+                <Link
+                  to={`edit`}
+                  className="absolute left-0 top-3 border border-blue-600 rounded-lg px-2 py-1 cursor-pointer text-xl hover:bg-blue-600 hover:text-white duration-300"
+                  type="button"
+                >
+                  Edit
+                </Link>
+              )}
+            <div className="flex flex-col w-full md:w-1/2 items-center ">
+              <h1 className="text-4xl md:text-5xl font-bold mb-2">
+                {event.title}
+              </h1>
               {event.subtitle && (
-                <h3 className="text-2xl font-semibold mb-2">
+                <h3 className="text-xl sm:text-2xl font-semibold mb-2">
                   {event.subtitle}
                 </h3>
               )}
               <div className="flex justify-between items-center text-2xl mt-4 mb-4">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col space-y-3 lg:space-y-0 lg:flex-row items-center justify-center">
                   {/* {formatDate(event.date, event.time)} */}
                   <p className="text-gray-600 mr-5 flex items-center">
                     <FaCalendar className="text-blue-600/80 mr-2 w-4" />
-                    {formatDate(event.date, event.time)}
+                    <span>{formatDate(event.date, event.time)}</span>
                   </p>
                   <p className="text-gray-600 ml-8 flex items-center ">
                     <IoPerson className="text-blue-600/80 mr-2 w-4 scale-[160%]" />
-                    {event.hoster.hosterName}
+                    {event.hoster.name}
                   </p>
                 </div>
               </div>
-              <a
-                href={event.url}
-                target="_blank"
+              <Link
+                to={`/venues/${event.venue.id}`}
                 className="flex items-center text-2xl mb-4 underline text-blue-600"
               >
                 <FaLocationDot className="w-4 mr-2 text-blue-600/80" />
-                {event.venueName}
-              </a>
-              <p className="mb-4 uppercase text-2xl">
+                {event.venue.name}
+              </Link>
+              <p className="mb-4 uppercase text-xl md:text-2xl ">
                 Type:{" "}
                 <span className="text-blue-600 font-bold tracking-widest">
                   {event.type}
@@ -62,7 +65,7 @@ export default function EventDetails() {
             <img
               src={event.image.url}
               alt={event.title}
-              className="w-1/2 h-90 object-cover rounded-2xl mb-6"
+              className="w-full md:w-1/2 h-90 object-cover rounded-2xl mb-6"
             />
           </div>
 
@@ -115,7 +118,8 @@ export default function EventDetails() {
                 
               </div> */}
               <div className="mt-6 flex justify-between items-end">
-                <Button disable={event.seats - event.bookedSeats === 0}>
+                <Button>
+                  {/* disable={event.seats - event.bookedSeats === 0} */}
                   Reserve Your Seat
                 </Button>
                 <div>
@@ -147,9 +151,9 @@ export default function EventDetails() {
               <div className="flex justify-center mt-5 text-lg">
                 <p>
                   <PiChairFill className="inline text-black mr-2" />
-                  <span className="text-orange-900">
+                  {/* <span className="text-orange-900">
                     {event.seats - event.bookedSeats}
-                  </span>{" "}
+                  </span>{" "} */}
                   / <span className="text-orange-900">{event.seats} </span>Seats{" "}
                   <span className="text-blue-600">Left</span> |
                   <span className="text-orange-900">

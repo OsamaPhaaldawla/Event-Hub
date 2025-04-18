@@ -1,31 +1,42 @@
 import { useLoaderData } from "react-router";
 import SelectInput from "./SelectInput";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { validateStep2 } from "./Validatioin";
 import ImageGall from "../ImageGall";
 
-export default function Step2({ next, prev, oldData }) {
+export default function Step2({ next, prev, oldData, setVenueName, edit }) {
   let venues = useLoaderData();
 
-  if (oldData) venues = venues.venuesData;
-
-  const venuesNames = venues.map((venue) => venue.name);
+  if (edit) venues = venues.venuesData;
+  const venueData = venues.map((venue) => ({
+    name: venue.name,
+    id: venue.id,
+  }));
 
   const [selectedVenue, setSelectedVenue] = useState(
-    oldData ? venues.find((venue) => venue.name === oldData.venueName) : {}
+    edit ? venues.find((venue) => venue.id === oldData.venue.id) : {}
   );
 
+  useEffect(() => {
+    if (edit) setVenueName(selectedVenue.name);
+  }, [edit, selectedVenue, setVenueName]);
+
   const [errors, setErrors] = useState({});
-  const [time, setTime] = useState(
-    oldData
-      ? selectedVenue.availableSlots.find((item) => item.date === oldData.date)
-          .times
-      : []
-  );
+  const [time, setTime] = useState(() => {
+    if (!edit) return [];
+
+    const oldDateOnly = oldData.date.slice(0, 10); // "2025-04-25"
+
+    const matchedSlot = selectedVenue.availableSlots.find(
+      (item) => item.date === oldDateOnly
+    );
+
+    return matchedSlot ? matchedSlot.times : [];
+  });
 
   function handleChange(event) {
     const selectedVenue = venues.find(
-      (venue) => venue.name === event.target.value
+      (venue) => venue.id === +event.target.value
     );
     setSelectedVenue(selectedVenue);
   }
@@ -41,24 +52,28 @@ export default function Step2({ next, prev, oldData }) {
     const fd = new FormData(document.querySelector("form"));
     const data = Object.fromEntries(fd.entries());
 
+    if (edit && data.image.size === 0) delete data.image;
+
     const { validationErrors } = validateStep2(data, selectedVenue);
     if (validationErrors) {
       setErrors({ ...validationErrors });
     } else {
+      setErrors({});
       next();
     }
   }
 
   return (
-    <>
+    <div className="mb-12">
       <h2 className="text-xl mb-2 font-bold">Venue Selection: </h2>
       <SelectInput
-        options={venuesNames}
+        options={venueData}
+        venues={true}
         placeHolder={"Select a venue"}
-        name={"venueName"}
+        name={"venueId"}
         error={errors.venueName}
         onChange={handleChange}
-        defaultValue={oldData ? oldData.venueName : ""}
+        defaultValue={edit ? oldData.venueName : ""}
       />
       {selectedVenue.name && (
         <>
@@ -94,7 +109,7 @@ export default function Step2({ next, prev, oldData }) {
                   name="date"
                   error={errors.date}
                   placeHolder="Reserve a date"
-                  defaultValue={oldData ? oldData.date : ""}
+                  defaultValue={edit ? oldData.date : ""}
                 />
               </div>
               <div className="w-1/2">
@@ -104,7 +119,7 @@ export default function Step2({ next, prev, oldData }) {
                   name="time"
                   error={errors.time}
                   placeHolder="Reserve a time"
-                  defaultValue={oldData ? oldData.time : ""}
+                  defaultValue={edit ? oldData.time : ""}
                 />
               </div>
             </div>
@@ -114,23 +129,23 @@ export default function Step2({ next, prev, oldData }) {
           </div>
         </>
       )}
-      <div className="mt-10 flex justify-between mb-3">
+      <div className="mt-6 flex justify-between mb-3">
         <button
           type="button"
           onClick={prev}
-          className="bg-gray-500 px-4 py-2 text-white rounded"
+          className="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded-lg cursor-pointer"
         >
-          Back
+          ← Back
         </button>
         <button
           type="button"
           onClick={handleClick}
-          className="bg-blue-500 px-4 py-2 text-white rounded"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg cursor-pointer"
         >
           Next
         </button>
       </div>
-    </>
+    </div>
   );
 }
 
