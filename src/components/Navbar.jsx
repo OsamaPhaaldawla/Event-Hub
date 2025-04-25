@@ -75,14 +75,23 @@ export default function Navbar() {
           <Navlink to="/host" isActive={location.pathname === "/host"}>
             Host Event
           </Navlink>
-          {user && user.role === "admin" && (
+          {user && user.role === "vendor" && (
             <Navlink
-              to="/create_venue"
+              to="/vendor/create-venue"
               isActive={location.pathname === "/create_venue"}
             >
               Create Venue
             </Navlink>
           )}
+          {user && user.role === "admin" && (
+            <Navlink
+              to="/admin/pending-venues"
+              isActive={location.pathname === "/pending-venues"}
+            >
+              Pending Venues
+            </Navlink>
+          )}
+
           {user ? (
             <button
               className="text-2xl text-gray-700 hover:text-blue-600 duration-300 py-3 cursor-pointer"

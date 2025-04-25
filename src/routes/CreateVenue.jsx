@@ -3,6 +3,7 @@ import { Form, redirect, useLoaderData, useSubmit } from "react-router";
 import Input from "../components/Form/Input";
 import SlotsInput from "../components/SlotsInput";
 import ImageUploader from "../components/ImageUploader";
+import { toast } from "react-toastify";
 
 export default function CreateVenue({ edit }) {
   const [slots, setSlots] = useState([]);
@@ -135,7 +136,8 @@ export const action = async ({ request, params }) => {
   );
 
   const result = await response.json();
-  console.log(result);
-
+  if (result.message) {
+    toast.success(result.message);
+  }
   return redirect("/venues");
 };

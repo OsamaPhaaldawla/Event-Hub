@@ -15,6 +15,9 @@ import { loader as venuesLoader } from "./components/Form/Step2";
 import { AuthProvider } from "./context/AuthContext";
 import CreateVenue, { action as VenueFormAction } from "./routes/CreateVenue";
 import Venues from "./routes/Venues";
+import PendingVenues, {
+  loader as pendingVenuesLoader,
+} from "./routes/PendingVenues";
 import VenueDetails, {
   loader as venueDetailsLoader,
 } from "./routes/VenueDetails";
@@ -86,9 +89,9 @@ const router = createBrowserRouter([
         loader: venueDetailsLoader,
       },
       {
-        path: "/venues/:venueId/edit",
+        path: "/vendor/edit-venue/:venueId",
         element: (
-          <ProtectedRoute roles={["admin"]}>
+          <ProtectedRoute roles={["vendor"]}>
             <CreateVenue edit key={"edit-venue"} />
           </ProtectedRoute>
         ),
@@ -96,9 +99,9 @@ const router = createBrowserRouter([
         action: VenueFormAction,
       },
       {
-        path: "/create_venue",
+        path: "/vendor/create-venue",
         element: (
-          <ProtectedRoute roles={["admin"]}>
+          <ProtectedRoute roles={["vendor"]}>
             <CreateVenue key={"create-venue"} />
           </ProtectedRoute>
         ),
@@ -112,6 +115,15 @@ const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         loader: MyEventsLoader,
+      },
+      {
+        path: "/admin/pending-venues",
+        element: (
+          <ProtectedRoute roles={["admin"]}>
+            <PendingVenues />
+          </ProtectedRoute>
+        ),
+        loader: pendingVenuesLoader,
       },
     ],
   },

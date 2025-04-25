@@ -7,7 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function VenueDetails() {
   const venue = useLoaderData();
   const { user } = useAuth();
-  const adminLoggin = user?.role === "admin";
+  const vendorLoggedin = user?.role === "vendor";
 
   return (
     <>
@@ -17,9 +17,9 @@ export default function VenueDetails() {
             <ImageGall images={venue.images} />
           </div>
           <div className="relative">
-            {adminLoggin && (
+            {vendorLoggedin && (
               <Link
-                to={adminLoggin ? `edit` : "login"}
+                to={vendorLoggedin ? `/vendor/edit-venue/${venue.id}` : "login"}
                 className="absolute right-8 top-3 border border-blue-600 rounded-lg px-2 py-1 cursor-pointer text-xl hover:bg-blue-600 hover:text-white duration-300"
                 type="button"
               >

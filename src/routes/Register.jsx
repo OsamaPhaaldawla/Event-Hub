@@ -7,7 +7,7 @@ export default function Register() {
     name: "",
     email: "",
     password: "",
-    role: "user", // default
+    role: "attendee", // default
   });
 
   const { login } = useAuth();
@@ -29,8 +29,9 @@ export default function Register() {
 
     const data = await res.json();
 
+    console.log(data);
     if (res.ok) {
-      login(data.token); // auto-login
+      login(data); // auto-login
       navigate("/");
     } else {
       alert(data.message || "Failed to register");
@@ -82,8 +83,9 @@ export default function Register() {
         onChange={handleChange}
         className="w-full p-2 mb-4 border rounded"
       >
-        <option value="user">User</option>
+        <option value="attendee">Attendee</option>
         <option value="hoster">Hoster</option>
+        <option value="vendor">Venue Onwer</option>
       </select>
 
       <button

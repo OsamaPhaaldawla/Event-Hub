@@ -24,12 +24,10 @@ export function AuthProvider({ children }) {
     setUser(decoded);
     toast.success(`${data.message}, Welcome ${decoded.name}`, {
       style: {
-        background: "oklch(0.623 0.214 259.815)",
-        color: "#fff",
         height: "70px",
         padding: "auto 3px",
       },
-      icon: <Check className="bg-green-600 rounded-full p-0.5" />,
+      icon: <Check className="bg-green-600 text-white rounded-full p-0.5" />,
     });
   }
 
@@ -37,12 +35,10 @@ export function AuthProvider({ children }) {
     localStorage.removeItem("token");
     toast.success("You logged out successfully!!", {
       style: {
-        background: "oklch(0.623 0.214 259.815)",
-        color: "#fff",
         height: "70px",
         padding: "auto 3px",
       },
-      icon: <Check className="bg-green-600 rounded-full p-0.5" />,
+      icon: <Check className="bg-green-600 text-white rounded-full p-0.5" />,
     });
     setUser(null);
   }

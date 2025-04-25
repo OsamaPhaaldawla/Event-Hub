@@ -48,31 +48,32 @@ app.use("/uploads", express.static(process.env.UPLOAD_DIR));
 
 const bcrypt = require("bcryptjs");
 
-app.post("/auth/register", async (req, res) => {
-  const { name, email, password, role } = req.body;
+//! Registeration Point Note: not working we work with another one below
+// app.post("/auth/register", async (req, res) => {
+//   const { name, email, password, role } = req.body;
 
-  try {
-    const hashedPassword = await bcrypt.hash(password, 10);
+//   try {
+//     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const [existingUser] = await pool.query(
-      "SELECT * FROM users WHERE email = ?",
-      [email]
-    );
-    if (existingUser.length > 0) {
-      return res.status(409).json({ error: "User already exists" });
-    }
+//     const [existingUser] = await pool.query(
+//       "SELECT * FROM users WHERE email = ?",
+//       [email]
+//     );
+//     if (existingUser.length > 0) {
+//       return res.status(409).json({ error: "User already exists" });
+//     }
 
-    await pool.query(
-      "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
-      [name, email, hashedPassword, role || "attendee"]
-    );
+//     await pool.query(
+//       "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)",
+//       [name, email, hashedPassword, role || "attendee"]
+//     );
 
-    res.status(201).json({ message: "User registered successfully" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Registration failed" });
-  }
-});
+//     res.status(201).json({ message: "User registered successfully" });
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ error: "Registration failed" });
+//   }
+// });
 
 const jwt = require("jsonwebtoken");
 
@@ -163,14 +164,14 @@ app.post("/register-admin", async (req, res) => {
   }
 });
 
-// REGISTER ENDPOINT (for hoster and user)
+// REGISTER ENDPOINT (for hoster and user and vendors)
 app.post("/register", async (req, res) => {
   const connection = await pool.getConnection(); // ✅ Get a connection from the pool
 
   try {
     const { name, email, password, role } = req.body;
 
-    if (!["user", "hoster"].includes(role)) {
+    if (!["attendee", "hoster", "vendor"].includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
     }
 
@@ -254,7 +255,7 @@ app.post("/logout", (req, res) => {
 // POST endpoint to create a new venue
 app.post(
   "/venues",
-  authMiddleware(["admin"]),
+  authMiddleware(["vendor"]),
   upload.array("images"),
   async (req, res) => {
     try {
@@ -281,8 +282,18 @@ app.post(
       try {
         // Insert venue
         const [venueResult] = await connection.query(
-          "INSERT INTO venues (name, location, url, capacity, description, price) VALUES (?, ?, ?, ?, ?, ?)",
-          [name, location, url, capacity, description, price]
+          `INSERT INTO venues (name, location, url, capacity, description, price, owner_id, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            name,
+            location,
+            url,
+            capacity,
+            description,
+            price,
+            req.user.userId,
+            "pending",
+          ]
         );
         const venueId = venueResult.insertId;
 
@@ -311,7 +322,7 @@ app.post(
 
         res
           .status(201)
-          .json({ message: "Venue created successfully", venueId });
+          .json({ message: "Venue created and pending approval", venueId });
       } catch (error) {
         await connection.rollback();
         connection.release();
@@ -324,10 +335,10 @@ app.post(
   }
 );
 
-// PUT endpoint to update an existing venue
+// PUT endpoint to update an existing venue //! not updated yet
 app.put(
   "/venues/:venueId",
-  authMiddleware(["admin"]),
+  authMiddleware(["vendor"]),
   upload.array("images"),
   async (req, res) => {
     const { venueId } = req.params;
@@ -422,7 +433,10 @@ app.put(
 // GET endpoint to retrieve all venues
 app.get("/venues", async (req, res) => {
   try {
-    const [venues] = await pool.query("SELECT * FROM venues");
+    // const [venues] = await pool.query("SELECT * FROM venues");
+    const [venues] = await pool.query(
+      "SELECT * FROM venues WHERE status = 'approved'"
+    );
 
     for (const venue of venues) {
       const [slots] = await pool.query(
@@ -459,6 +473,19 @@ app.get("/venues", async (req, res) => {
   } catch (error) {
     console.error("Error fetching venues:", error);
     res.status(500).json({ error: "Failed to fetch venues" });
+  }
+});
+
+// GET /venues/pending
+app.get("/venues/pending", authMiddleware(["admin"]), async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      "SELECT * FROM venues WHERE status = 'pending'"
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("Error fetching pending venues:", err);
+    res.status(500).json({ error: "Failed to fetch pending venues." });
   }
 });
 
@@ -837,6 +864,27 @@ app.get("/events/hoster/:id", authMiddleware(["hoster"]), async (req, res) => {
   } catch (error) {
     console.error("Error fetching hoster events:", error);
     res.status(500).json({ error: "Failed to fetch hoster events" });
+  }
+});
+
+// PATCH /venues/:id/status
+app.patch("/venues/:id/status", authMiddleware(["admin"]), async (req, res) => {
+  const venueId = req.params.id;
+  const { status } = req.body;
+
+  if (!["approved", "rejected"].includes(status)) {
+    return res.status(400).json({ error: "Invalid status value." });
+  }
+
+  try {
+    await pool.query("UPDATE venues SET status = ? WHERE id = ?", [
+      status,
+      venueId,
+    ]);
+    res.json({ message: `Venue status updated to ${status}` });
+  } catch (err) {
+    console.error("Error updating venue status:", err);
+    res.status(500).json({ error: "Failed to update venue status." });
   }
 });
 

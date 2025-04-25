@@ -42,7 +42,6 @@ export const eventTypes = [
   "Charity & Fundraising",
   "Workshop & Seminar",
   "University Event",
-  "Personal Development Event",
   "Sports Tournament",
   "Fitness Bootcamp",
   "Marathon & Race",

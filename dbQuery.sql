@@ -11,8 +11,13 @@ ALTER TABLE users MODIFY role ENUM('user', 'hoster', 'admin') NOT NULL;
 
 select * from events;
 
-ALTER TABLE events
-MODIFY COLUMN date DATE;
+select * from venues;
+select * from venue_images;
+select * from available_slots;
+
+ALTER TABLE venues ADD COLUMN status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending';
+ALTER TABLE users ADD COLUMN role ENUM('admin', 'hoster', 'user', 'vendor') DEFAULT 'user';
+ALTER TABLE venues ADD COLUMN owner_id INT;
 
 
 select * from users;
@@ -24,4 +29,10 @@ ALTER TABLE events
   ADD FOREIGN KEY (venue_id) REFERENCES venues(id),
   ADD FOREIGN KEY (hoster_id) REFERENCES users(id);
   
+ALTER TABLE users MODIFY COLUMN role ENUM('user', 'hoster', 'admin', 'vendor');
   
+ALTER TABLE users MODIFY role ENUM('admin', 'hoster', 'attendee', 'vendor', 'user') NOT NULL;
+-- we choose the existing users because we are in the safe mode and modifying won't work directly
+UPDATE users SET role = 'attendee' WHERE id IN (5, 7, 9);
+ALTER TABLE users MODIFY role ENUM('admin', 'hoster', 'attendee', 'vendor') NOT NULL;
+
