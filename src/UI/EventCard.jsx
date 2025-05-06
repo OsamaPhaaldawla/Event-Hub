@@ -22,7 +22,9 @@ const EventCard = ({ event }) => {
             <span className="text-neutral-400 text-sm text-right">
               {formatted}
             </span>
-            <h2 className="text-xl font-bold capitalize">{event.title}</h2>
+            <h2 className="text-3xl font-bold capitalize text-blue-600">
+              {event.title}
+            </h2>
           </div>
           <p className="text-gray-600 line-clamp-2">{event.description}</p>
         </div>

@@ -14,7 +14,7 @@ export function validateStep1(formData) {
 
   if (!formData.title) {
     errors.title = "Title is required.";
-  } else if (formData.title.length > 30) {
+  } else if (formData.title.length > 60) {
     errors.title = "Title is too long, max 30 characters.";
   }
 
@@ -50,8 +50,8 @@ export function validateStep1(formData) {
 
   if (!formData.description) {
     errors.description = "Description is required.";
-  } else if (formData.description.length > 300) {
-    errors.description = "Description must be at most 300 characters.";
+  } else if (formData.description.length < 100) {
+    errors.description = "Description must be at least 100 characters.";
   }
 
   const validationErrors = Object.keys(errors).length === 0 ? null : errors;

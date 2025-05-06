@@ -71,7 +71,9 @@ export default function EventDetails() {
 
           {/* <div className="text-2xl mt-10">
             Event Description: */}
-          <p className="text-xl mt-4 mb-8 text-center">{event.description}</p>
+          <p className="max-w-4xl mx-auto text-xl mt-4 mb-8 text-center whitespace-pre-wrap">
+            {event.description}
+          </p>
           {/* </div> */}
           {event.accessType === "open" && (
             <>

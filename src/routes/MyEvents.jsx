@@ -48,7 +48,15 @@ export default MyEvents;
 export const loader = async () => {
   const token = localStorage.getItem("token");
   const user = jwtDecode(token);
-  const res = await fetch(`http://localhost:3000/events/hoster/${user.userId}`);
+  const res = await fetch(
+    `http://localhost:3000/events/hoster/${user.userId}`,
+    {
+      method: "GET",
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    }
+  );
   if (!res.ok) {
     throw {
       message: "Failed to fetch events.",

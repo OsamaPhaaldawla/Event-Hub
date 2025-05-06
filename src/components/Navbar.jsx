@@ -86,7 +86,7 @@ export default function Navbar() {
           {user && user.role === "admin" && (
             <Navlink
               to="/admin/pending-venues"
-              isActive={location.pathname === "/pending-venues"}
+              isActive={location.pathname === "/admin/pending-venues"}
             >
               Pending Venues
             </Navlink>
